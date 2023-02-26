@@ -47,7 +47,7 @@ class UnicodeMaths {
         if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return; }
 
         const editor: TextEditor = <TextEditor> window.activeTextEditor;
-        const dokey = () => {
+        const doKey = () => {
             if (key === SPACE_KEY) {
                 commands.executeCommand('type', { source: 'keyboard', text: ' ' });
             } else {
@@ -73,9 +73,9 @@ class UnicodeMaths {
                 }
             });
         });
-        // always propegate the space key, or propegate tab
+        // always propagate the space key, or propagate tab
         // only if not used to insert a character
-        if (!c || key === SPACE_KEY) { return dokey(); }
+        if (!c || key === SPACE_KEY) { return doKey(); }
     }
 
     private evalPosition(document: TextDocument, position: Position): [Range, string] | [null, null] {
@@ -94,7 +94,7 @@ class UnicodeMaths {
         const lnRange = new Range(lineStart, position);
         const line = document.getText(lnRange);
         const slash = line.lastIndexOf('\\');
-        const word = line.substr(slash).trim();
+        const word = line.slice(slash).trim();
         const start = new Position(position.line, slash);
         const end = start.translate(undefined, word.length);
         return [new Range(start, end), word];
@@ -129,7 +129,7 @@ class UnicodeMaths {
      *  return null if the string is unchanged
      */
     private mapToSubSup(word: string, mapper: {[key: string]: string}): string | null {
-        const target = word.substr(2);
+        const target = word.slice(2);
         const newStr = target.split('').map((c: string) => mapper[c] || c).join('');
         return newStr === target ? null : newStr;
     }
@@ -146,7 +146,7 @@ class UnicodeMaths {
      *  return null if the string is unchanged
      */
     private mapToBoldIt(word: string, bold: boolean): string | null {
-        const target = word.substr(3);
+        const target = word.slice(3);
         const codePrefix = bold ? '\\mbf' : '\\mit';
         const newStr = target.split('').map((c: string) => this.codes[codePrefix + c] || c).join('');
         return newStr === target ? null : newStr;

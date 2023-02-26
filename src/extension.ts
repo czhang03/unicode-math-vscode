@@ -5,6 +5,10 @@ import * as Symbols from './symbols';
 
 const SPACE_KEY: string = 'space';
 
+/**
+ * Function to run when the extension is activated 
+ * @param context the editor context
+ */
 export function activate(context: ExtensionContext) {
     const ctl = new UnicodeMaths(Symbols.default);
 
@@ -17,6 +21,9 @@ export function activate(context: ExtensionContext) {
     }));
 }
 
+/**
+ * function to run when the extension is deactivated, currently empty
+ */
 export function deactivate() {}
 
 class UnicodeMaths {
@@ -24,9 +31,9 @@ class UnicodeMaths {
     private keys: string[];
     constructor(private codes: {[key:string]: string}) { this.keys = Object.keys(codes); }
 
-    public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext) {
+    public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): Promise<CompletionItem[]> {
         const [target, word] = this.evalPosition(document, position);
-        if (!target || !word) { return; }
+        if (!target || !word) { return []; }
         const matches = this.keys.filter((k: string) => k.startsWith(word));
         this.debug(`completion items - word: ${word} has ${matches.length} matches`);
         return matches.map((key: string) => {
@@ -38,7 +45,7 @@ class UnicodeMaths {
         });
     }
 
-    public commit(key: string) {
+    public commit(key: string): void {
         if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return; }
         this.debug('commit - key: ' + key);
 
@@ -100,6 +107,13 @@ class UnicodeMaths {
         return [new Range(start, end), word];
     }
 
+    /**
+     * Given a ascii word, convert it to its unicode counter part, 
+     * return null when there is nothing to convert
+     * 
+     * @param word the input word user typed on the editor
+     * @returns the corresponding unicode math characters
+     */
     private doWord(word: string): string | null {
         const startch = word.charAt(1);
         this.debug('doWord: ', word);
@@ -112,12 +126,33 @@ class UnicodeMaths {
         return this.codes[word] || null;
     }
 
+    /**
+     * Given a string, convert it into subscript or superscript according to the given mapper
+     * TODO: This function can be changed to input a indicator instead of a mapper
+     * TODO: don't need to return null
+     * 
+     * @param word the input word user typed on the editor
+     * @param mapper a mapping from character to its superscript/subscript counterpart
+     * @returns the subscript/superscript unicode string. 
+     *  return null if the string is unchanged
+     */
     private mapToSubSup(word: string, mapper: {[key: string]: string}): string | null {
         const target = word.substr(2);
         const newstr = target.split('').map((c: string) => mapper[c] || c).join('');
         return newstr === target ? null : newstr;
     }
 
+    /**
+     * Given a string, convert it into bold or italic according to the given mapper
+     * TODO: This function can be changed to input a indicator instead of a mapper
+     * TODO: merge this with mapToSubSup
+     * TODO: don't need to return null
+     * 
+     * @param word the input word user typed on the editor
+     * @param mapper a mapping from character to its superscript/subscript counterpart
+     * @returns the subscript/superscript unicode string. 
+     *  return null if the string is unchanged
+     */
     private mapToBoldIt(word: string, bold: boolean): string | null {
         const target = word.substr(3);
         const codeprfx = bold ? '\\mbf' : '\\mit';
@@ -126,6 +161,14 @@ class UnicodeMaths {
         return newstr === target ? null : newstr;
     }
 
+    /**
+     * Given a string with modifiers (for example _ for subscript etc). 
+     * Convert the string into its unicode version
+     * @param word a word with modifier 
+     *  TODO: rename the input
+     * @returns the unicode version 
+     *  TODO: remove null
+     */
     private mapTo(word: string): string | null {
         const modifier = word.split(':');
         if (modifier.length === 2) {

@@ -3,7 +3,7 @@ import { TextDocument, Position, CancellationToken, CompletionContext,
     TextEditorEdit, Uri, commands, languages, window } from "vscode";
 import * as Symbols from './symbols';
 
-let SPACE_KEY: string = 'space';
+const SPACE_KEY: string = 'space';
 
 export function activate(context: ExtensionContext) {
     const ctl = new UnicodeMaths(Symbols.default);
@@ -27,7 +27,7 @@ class UnicodeMaths {
     public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext) {
         const [target, word] = this.evalPosition(document, position);
         if (!target || !word) { return; }
-        let matches = this.keys.filter((k: string) => k.startsWith(word));
+        const matches = this.keys.filter((k: string) => k.startsWith(word));
         this.debug(`completion items - word: ${word} has ${matches.length} matches`);
         return matches.map((key: string) => {
             const item = new CompletionItem(key);

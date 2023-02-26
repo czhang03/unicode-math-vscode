@@ -27,8 +27,8 @@ export function activate(context: ExtensionContext) {
 export function deactivate() {}
 
 class UnicodeMaths {
-    private keys: string[];
-    constructor(private codes: {[key:string]: string}) { this.keys = Object.keys(codes); }
+    private readonly keys: string[];
+    constructor(private readonly codes: {[key:string]: string}) { this.keys = Object.keys(codes); }
 
     public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): Promise<CompletionItem[]> {
         const [target, word] = this.evalPosition(document, position);

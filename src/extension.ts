@@ -27,7 +27,6 @@ export function activate(context: ExtensionContext) {
 export function deactivate() {}
 
 class UnicodeMaths {
-    private DEBUG: boolean = false;
     private keys: string[];
     constructor(private codes: {[key:string]: string}) { this.keys = Object.keys(codes); }
 
@@ -35,7 +34,6 @@ class UnicodeMaths {
         const [target, word] = this.evalPosition(document, position);
         if (!target || !word) { return []; }
         const matches = this.keys.filter((k: string) => k.startsWith(word));
-        this.debug(`completion items - word: ${word} has ${matches.length} matches`);
         return matches.map((key: string) => {
             const item = new CompletionItem(key);
             item.detail = this.codes[key];
@@ -47,11 +45,9 @@ class UnicodeMaths {
 
     public commit(key: string): void {
         if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return; }
-        this.debug('commit - key: ' + key);
 
         const editor: TextEditor = <TextEditor> window.activeTextEditor;
         const dokey = () => {
-            this.debug('dokey: ' + key);
             if (key === SPACE_KEY) {
                 commands.executeCommand('type', { source: 'keyboard', text: ' ' });
             } else {
@@ -68,9 +64,7 @@ class UnicodeMaths {
                     const [target, word] = this.evalPosition(window.activeTextEditor.document, position);
                     if (target && word) {
                         const changed = this.doWord(word);
-                        this.debug('word:', word, 'changing to:', changed);
                         if (changed) {
-                            this.debug(`editor.replace [${target}] [${changed}]`, target);
                             editor.delete(target);
                             editor.insert(target.start, changed);
                             c = true;
@@ -84,11 +78,10 @@ class UnicodeMaths {
         if (!c || key === SPACE_KEY) { return dokey(); }
     }
 
-    private evalPosition(document: TextDocument, position: Position): any[] {
+    private evalPosition(document: TextDocument, position: Position): [Range, string] | [null, null] {
         if (position.character === 0) { return [null, null]; }
         try {
             const [range, word] = this.getWordRangeAtPosition(document, position);
-            this.debug('evalPosition - word:', word);
             return !word || !word.startsWith('\\') ? [null, null] : [range, word];
         } catch (e) {
             return [null, null];
@@ -96,10 +89,10 @@ class UnicodeMaths {
     }
 
     // this implementation has a loser meaning of word (anything starting with \)
-    private getWordRangeAtPosition(document: TextDocument, position: Position): any[] {
-        const linestart = new Position(position.line, 0);
-        const lnrange = new Range(linestart, position);
-        const line = document.getText(lnrange);
+    private getWordRangeAtPosition(document: TextDocument, position: Position): [Range, string] {
+        const lineStart = new Position(position.line, 0);
+        const lnRange = new Range(lineStart, position);
+        const line = document.getText(lnRange);
         const slash = line.lastIndexOf('\\');
         const word = line.substr(slash).trim();
         const start = new Position(position.line, slash);
@@ -115,10 +108,9 @@ class UnicodeMaths {
      * @returns the corresponding unicode math characters
      */
     private doWord(word: string): string | null {
-        const startch = word.charAt(1);
-        this.debug('doWord: ', word);
-        if (startch === '_') { return this.mapToSubSup(word, subs); }
-        else if (startch === '^') { return this.mapToSubSup(word, sups); }
+        const startChar = word.charAt(1);
+        if (startChar === '_') { return this.mapToSubSup(word, subs); }
+        else if (startChar === '^') { return this.mapToSubSup(word, sups); }
         // else if (word.startsWith('\\i:')) { return this.mapToBoldIt(word, false); }
         else if (word.startsWith('\\i:')) { return 'foo'; }
         else if (word.startsWith('\\b:')) { return this.mapToBoldIt(word, true); }
@@ -138,8 +130,8 @@ class UnicodeMaths {
      */
     private mapToSubSup(word: string, mapper: {[key: string]: string}): string | null {
         const target = word.substr(2);
-        const newstr = target.split('').map((c: string) => mapper[c] || c).join('');
-        return newstr === target ? null : newstr;
+        const newStr = target.split('').map((c: string) => mapper[c] || c).join('');
+        return newStr === target ? null : newStr;
     }
 
     /**
@@ -155,10 +147,9 @@ class UnicodeMaths {
      */
     private mapToBoldIt(word: string, bold: boolean): string | null {
         const target = word.substr(3);
-        const codeprfx = bold ? '\\mbf' : '\\mit';
-        const newstr = target.split('').map((c: string) => this.codes[codeprfx + c] || c).join('');
-        this.debug('mapToBoldIt word: ', word, 'bold:', bold, 'newstr:', newstr);
-        return newstr === target ? null : newstr;
+        const codePrefix = bold ? '\\mbf' : '\\mit';
+        const newStr = target.split('').map((c: string) => this.codes[codePrefix + c] || c).join('');
+        return newStr === target ? null : newStr;
     }
 
     /**
@@ -173,17 +164,13 @@ class UnicodeMaths {
         const modifier = word.split(':');
         if (modifier.length === 2) {
             const mod    = modifier[0];
-            const newstr = modifier[1];
-            const modstr = newstr.split('').map((c: string) => this.codes[mod + c] || c).join('');
-            return modstr === newstr ? null : modstr;
+            const newStr = modifier[1];
+            const modStr = newStr.split('').map((c: string) => this.codes[mod + c] || c).join('');
+            return modStr === newStr ? null : modStr;
         }
         return null;
     }
 
-    private debug(msg: any, ...optionals: any[]) {
-        if (!this.DEBUG) { return; }
-        console.log(msg, ...optionals);
-    }
 }
 
 // see: https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts

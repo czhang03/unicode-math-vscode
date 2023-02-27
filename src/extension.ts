@@ -1,8 +1,9 @@
 import {
     TextDocument, Position, CancellationToken, CompletionContext,
     Range, CompletionItem, ExtensionContext, TextEditor,
-    TextEditorEdit, Uri, commands, languages, window, CompletionItemLabel, CompletionItemKind
+    TextEditorEdit, Uri, commands, languages, window, CompletionItemKind, SnippetString, MarkdownString
 }  from "vscode";
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./maps";
 import {symbols} from './symbols';
 
 const SPACE_KEY: string = 'space';
@@ -12,13 +13,25 @@ const SPACE_KEY: string = 'space';
  * @param context the editor context
  */
 export function activate(context: ExtensionContext) {
+    console.debug("extension activated")
+
     const ctl = new UnicodeMaths(symbols);
 
-    context.subscriptions.push(languages.registerCompletionItemProvider({ scheme: 'file', language: '*' }, ctl));
+    context.subscriptions.push(languages.registerCompletionItemProvider(
+        {scheme: 'file', language: '*'}, 
+        {provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext){
+            
+            const [target, word] = evalPosition(document, position);
+            if (!target || !word) { return []; }
+            console.debug(`trying to provide completion for ${word}`)
+            return genCompletions(word)
+        }},
+        "\\"  // trigger completion on slash
+    ));
 
-    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.commit_tab', () => ctl.commit('tab')));
-    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.symbols_html', () => {
-        commands.executeCommand('vscode.open', Uri.parse('https://github.com/mvoidex/UnicodeMath/blob/master/table.md'));
+    context.subscriptions.push(commands.registerCommand('unicode-math-commit_tab', () => ctl.commit('tab')));
+    context.subscriptions.push(commands.registerCommand('unicode-math-symbols_html', () => {
+        commands.executeCommand('open', Uri.parse('https://github.com/mvoidex/UnicodeMath/blob/master/table.md'));
     }));
 }
 
@@ -73,15 +86,6 @@ const prefixToMapType: Map<string, StringMapType> = new Map([
 
 // all the possible prefixes
 const prefixes = Object.keys(prefixToMapType)
-
-//TODO: place holder maps
-const supsMap = new Map<string, string>()
-const subsMap = new Map<string, string>()
-const boldMap = new Map<string, string>()
-const italicMap = new Map<string, string>()
-const calMap = new Map<string, string>()
-const frakMap = new Map<string, string>()
-const bbMap = new Map<string, string>()
 
 // Give the map type its corresponding map.
 function mapTypeToMap(mapType: StringMapType): Map<string, string> {
@@ -186,6 +190,31 @@ function genCompletions(str: string): CompletionItem[]{
 }
 
 
+// this implementation has a loser meaning of word (anything starting with \)
+function getWordRangeAtPosition(document: TextDocument, position: Position): [Range, string] {
+    const lineStart = new Position(position.line, 0);
+    const lnRange = new Range(lineStart, position);
+    const line = document.getText(lnRange);
+    const slash = line.lastIndexOf('\\');
+    const word = line.slice(slash).trim();
+    const start = new Position(position.line, slash);
+    const end = start.translate(undefined, word.length);
+    return [new Range(start, end), word];
+}
+
+
+function evalPosition(document: TextDocument, position: Position): [Range, string] | [null, null] {
+    if (position.character === 0) { return [null, null]; }
+    try {
+        const [range, word] = getWordRangeAtPosition(document, position);
+        return !word || !word.startsWith('\\') ? [null, null] : [range, word];
+    } catch (e) {
+        return [null, null];
+    }
+}
+
+
+
 class UnicodeMaths {
     private readonly keys: string[];
     constructor(private readonly codes: { [key: string]: string }) { this.keys = Object.keys(codes); }
@@ -223,7 +252,9 @@ class UnicodeMaths {
                 if (window.activeTextEditor) {
                     const [target, word] = this.evalPosition(window.activeTextEditor.document, position);
                     if (target && word) {
-                        const changed = this.doWord(word);
+                        console.debug(`trying to commit ${word} from ${target.start} to ${target.end}`)
+                        const changed = convertString(word);
+                        console.debug(`committing to ${changed}`)
                         if (changed) {
                             editor.delete(target);
                             editor.insert(target.start, changed);

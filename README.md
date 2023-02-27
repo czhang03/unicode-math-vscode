@@ -37,3 +37,8 @@ You can also convert a list of chars with special prefix via \prefix:abc, which
 will be equivalent to \prefixa \prefixb and \prefixc, for example:
 
 \Bbb:ABCabc → 𝔸𝔹ℂ𝕒𝕓𝕔
+
+# License
+
+This extension is licensed under LGPLv3.0,
+because the license of [ibus-latex-table](https://github.com/moebiuscurve/ibus-table-others/blob/main/tables/latex.txt) is under LGPL

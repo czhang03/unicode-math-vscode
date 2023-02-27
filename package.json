@@ -4,7 +4,7 @@
 	"description": "Easy insertion of unicode math symbols in ∀ programming languages",
 	"version": "0.4",
 	"publisher": "Cheng Zhang",
-	"license": "MIT",
+	"license": "lgpl-3.0",
 	"homepage": "https://github.com/czhang03/unicode-math-vscode",
 	"icon": "icon.png",
 	"repository": {

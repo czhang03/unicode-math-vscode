@@ -2,14 +2,14 @@
 	"name": "unicode-math-vscode",
 	"displayName": "Fast Unicode Math Characters",
 	"description": "Easy insertion of unicode math symbols in ∀ programming languages",
-	"version": "0.3.5",
-	"publisher": "GuidoTapia2",
+	"version": "0.4",
+	"publisher": "Cheng Zhang",
 	"license": "MIT",
-	"homepage": "https://picnet.com.au/artificial-intelligence/",
+	"homepage": "https://github.com/czhang03/unicode-math-vscode",
 	"icon": "icon.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/gatapia/unicode-math-vscode"
+		"url": "https://github.com/czhang03/unicode-math-vscode"
 	},
 	"engines": {
 		"vscode": "^1.74.0"

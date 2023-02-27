@@ -32,7 +32,7 @@ export function activate(context: ExtensionContext) {
 
     // register tab commit
     context.subscriptions.push(commands.registerCommand('unicode-math-vscode.commit_tab', () => tabCommit('tab')));
-    context.subscriptions.push(commands.registerCommand('unicode-math-symbols_html', () => {
+    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.symbols_html', () => {
         commands.executeCommand('open', Uri.parse('https://github.com/mvoidex/UnicodeMath/blob/master/table.md'));
     }));
 

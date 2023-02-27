@@ -1,7 +1,9 @@
-import { TextDocument, Position, CancellationToken, CompletionContext,
+import {
+    TextDocument, Position, CancellationToken, CompletionContext,
     Range, CompletionItem, ExtensionContext, TextEditor,
-    TextEditorEdit, Uri, commands, languages, window } from "vscode";
-import * as Symbols from './symbols';
+    TextEditorEdit, Uri, commands, languages, window, CompletionItemLabel, CompletionItemKind
+}  from "vscode";
+import {symbols} from './symbols';
 
 const SPACE_KEY: string = 'space';
 
@@ -10,12 +12,11 @@ const SPACE_KEY: string = 'space';
  * @param context the editor context
  */
 export function activate(context: ExtensionContext) {
-    const ctl = new UnicodeMaths(Symbols.default);
+    const ctl = new UnicodeMaths(symbols);
 
     context.subscriptions.push(languages.registerCompletionItemProvider({ scheme: 'file', language: '*' }, ctl));
 
     context.subscriptions.push(commands.registerCommand('unicode-math-vscode.commit_tab', () => ctl.commit('tab')));
-    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.commit_space', () => ctl.commit(SPACE_KEY)));
     context.subscriptions.push(commands.registerCommand('unicode-math-vscode.symbols_html', () => {
         commands.executeCommand('vscode.open', Uri.parse('https://github.com/mvoidex/UnicodeMath/blob/master/table.md'));
     }));
@@ -24,11 +25,170 @@ export function activate(context: ExtensionContext) {
 /**
  * function to run when the extension is deactivated, currently empty
  */
-export function deactivate() {}
+export function deactivate() { }
+
+/**
+ * Types of string mappings, usually used for math fonts
+ */
+enum StringMapType {
+    Superscript,
+    Subscript,
+    Bold,
+    Italic,
+    MathCal,
+    MathFrak,
+    MathBB,
+}
+
+
+/**
+ * A map that map the prefix to its corresponding maps
+ */
+const prefixToMapType: Map<string, StringMapType> = new Map([
+    ["\\^", StringMapType.Superscript],
+    ["\\_", StringMapType.Subscript],
+
+    ["\\b:", StringMapType.Bold],
+    ["\\bf:", StringMapType.Bold],
+    ["\\mathbf:", StringMapType.Bold],
+    ["\\mathbf", StringMapType.Bold],
+
+    ["\\i:", StringMapType.Italic],
+    ["\\it:", StringMapType.Italic],
+    ["\\mathit:", StringMapType.Italic],
+    ["\\mathit", StringMapType.Italic],
+
+    ["\\cal:", StringMapType.MathCal],
+    ["\\mathcal:", StringMapType.MathCal],
+    ["\\mathcal", StringMapType.MathCal],
+
+    ["\\frak:", StringMapType.MathFrak],
+    ["\\mathfrak:", StringMapType.MathFrak],
+    ["\\mathfrak", StringMapType.MathFrak],
+
+    ["\\Bbb:", StringMapType.MathBB],
+    ["\\mathbb:", StringMapType.MathBB],
+    ["\\mathbb", StringMapType.MathBB],
+])
+
+// all the possible prefixes
+const prefixes = Object.keys(prefixToMapType)
+
+//TODO: place holder maps
+const supsMap = new Map<string, string>()
+const subsMap = new Map<string, string>()
+const boldMap = new Map<string, string>()
+const italicMap = new Map<string, string>()
+const calMap = new Map<string, string>()
+const frakMap = new Map<string, string>()
+const bbMap = new Map<string, string>()
+
+// Give the map type its corresponding map.
+function mapTypeToMap(mapType: StringMapType): Map<string, string> {
+
+    const map: Map<StringMapType, Map<string, string>> = new Map([
+        [StringMapType.Superscript, supsMap],
+        [StringMapType.Subscript, subsMap],
+        [StringMapType.Bold, boldMap],
+        [StringMapType.Italic, italicMap],
+        [StringMapType.MathCal, calMap],
+        [StringMapType.MathFrak, frakMap],
+        [StringMapType.MathBB, bbMap],
+    ])
+
+    // add an additional check for log purpose
+    const res = map.get(mapType)
+    if (res === undefined) {
+        console.log("unexpected error, there is no map for mapType")
+    }
+
+    // if result is empty then give a empty map
+    return res ?? new Map()
+}
+
+
+/**
+ * Given a word, strip the prefix, and get the map type that prefix correspond to 
+ * Notice this will automatically match the longest prefix to avoid ambiguity in the prefix
+ * 
+ * @param word the pre-converted ascii word that the user typed
+ * @returns the map type corresponding to the string, and the string with prefix striped
+ */
+function stripPrefix(word: string): [StringMapType, string] | null {
+    const validPrefix = prefixes.filter((prefix) => word.startsWith(prefix))
+    const longestPrefix = validPrefix.reduce((p1, p2) => p1.length >= p2.length ? p1 : p2, "")
+    const wordWithoutPrefix = word.slice(longestPrefix.length)
+    const mapType = prefixToMapType.get(longestPrefix)
+
+    return mapType? [mapType, wordWithoutPrefix] : null
+}
+
+/**
+ * Given a string and a map type, convert it to its corresponding unicode version.
+ * This function will ignoring unknown characters
+ * 
+ * @param str the input string, typed by the user
+ * @param type the conversion type (typically math fonts)
+ * @returns the unicode version of the converted string
+ */
+function mapString(str: string, type: StringMapType): string {
+    return str.split("")
+        .map(char => mapTypeToMap(type).get(char) ?? "")
+        .join("")
+}
+
+/**
+ * Given a user inputted string, convert it into unicode, 
+ * return undefined if it cannot be converted
+ * @param str a input string, typed in the editor by the user
+ * @returns the unicode version of the input string
+ */
+function convertString(str: string) : string | null {
+
+    const [mapType, withoutPrefix] = stripPrefix(str) ?? [null, null]
+    
+    // if a prefix cannot be found, then fallback to search in symbols
+    if (mapType === null && withoutPrefix === null) {return symbols[str] || null}
+
+    // if prefix can be found, using prefix
+    else {return mapString(withoutPrefix, mapType)}
+}
+
+/**
+ * Generate completion based on the string at cursor
+ * @param str the user inputted string at the cursor
+ * @returns a list of completion items from the current string.
+ */
+function genCompletions(str: string): CompletionItem[]{
+    // if the string matches any prefix
+    // then just return how current string will be converted
+    const [mapType, withoutPrefix] = stripPrefix(str) ?? [null, null]
+    if (mapType !== null && withoutPrefix !== null) {
+        return [new CompletionItem(mapString(str, mapType))]
+    }
+
+    // if the string don't match any prefix
+    // then find generate completion for prefix or symbols
+    const prefixCompletions = prefixes.filter(prefix => prefix.startsWith(str))
+                                .map(prefix => {
+                                    const completion = new CompletionItem(prefix, CompletionItemKind.Keyword)
+                                    // retrigger completion after prefix, to complete the map string
+                                    completion.command = 
+                                        { command: 'editor.action.triggerSuggest', title: 'completing after prefix'} 
+                                    return completion
+                                })
+    const symbolCompletions = Object.entries<string>(symbols)
+                                .filter(([inpStr, unicodeChar]) => inpStr[0].startsWith(str))
+                                .map(([inpStr, unicodeChar]) => 
+                                    new CompletionItem({label: unicodeChar, detail: inpStr}))
+
+    return prefixCompletions.concat(symbolCompletions)
+}
+
 
 class UnicodeMaths {
     private readonly keys: string[];
-    constructor(private readonly codes: {[key:string]: string}) { this.keys = Object.keys(codes); }
+    constructor(private readonly codes: { [key: string]: string }) { this.keys = Object.keys(codes); }
 
     public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): Promise<CompletionItem[]> {
         const [target, word] = this.evalPosition(document, position);
@@ -46,7 +206,7 @@ class UnicodeMaths {
     public commit(key: string): void {
         if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return; }
 
-        const editor: TextEditor = <TextEditor> window.activeTextEditor;
+        const editor: TextEditor = <TextEditor>window.activeTextEditor;
         const doKey = () => {
             if (key === SPACE_KEY) {
                 commands.executeCommand('type', { source: 'keyboard', text: ' ' });
@@ -57,10 +217,10 @@ class UnicodeMaths {
 
         var c = false;
         editor.edit((editor: TextEditorEdit) => {
-            if(!window.activeTextEditor) { return; }
+            if (!window.activeTextEditor) { return; }
             window.activeTextEditor.selections.map((v) => {
                 const position = v.start;
-                if(window.activeTextEditor) {
+                if (window.activeTextEditor) {
                     const [target, word] = this.evalPosition(window.activeTextEditor.document, position);
                     if (target && word) {
                         const changed = this.doWord(word);
@@ -108,10 +268,8 @@ class UnicodeMaths {
      * @returns the corresponding unicode math characters
      */
     private doWord(word: string): string | null {
-        const startChar = word.charAt(1);
-        if (startChar === '_') { return this.mapToSubSup(word, subs); }
-        else if (startChar === '^') { return this.mapToSubSup(word, sups); }
-        // else if (word.startsWith('\\i:')) { return this.mapToBoldIt(word, false); }
+        if (word.startsWith('\_')) { return this.mapToSubSup(word, subs); }
+        else if (word.startsWith('\^')) { return this.mapToSubSup(word, sups); }
         else if (word.startsWith('\\i:')) { return 'foo'; }
         else if (word.startsWith('\\b:')) { return this.mapToBoldIt(word, true); }
         else if (!word.startsWith('\\:') && word.startsWith('\\') && word.includes(':')) { return this.mapTo(word); }
@@ -128,7 +286,7 @@ class UnicodeMaths {
      * @returns the subscript/superscript unicode string. 
      *  return null if the string is unchanged
      */
-    private mapToSubSup(word: string, mapper: {[key: string]: string}): string | null {
+    private mapToSubSup(word: string, mapper: { [key: string]: string }): string | null {
         const target = word.slice(2);
         const newStr = target.split('').map((c: string) => mapper[c] || c).join('');
         return newStr === target ? null : newStr;
@@ -163,7 +321,7 @@ class UnicodeMaths {
     private mapTo(word: string): string | null {
         const modifier = word.split(':');
         if (modifier.length === 2) {
-            const mod    = modifier[0];
+            const mod = modifier[0];
             const newStr = modifier[1];
             const modStr = newStr.split('').map((c: string) => this.codes[mod + c] || c).join('');
             return modStr === newStr ? null : modStr;
@@ -174,7 +332,8 @@ class UnicodeMaths {
 }
 
 // see: https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts
-const sups: {[key: string]: string} = {    "L": "ᴸ", "I": "ᴵ", "y": "ʸ", "9": "⁹", "0": "⁰", "δ": "ᵟ", "w": "ʷ", "4": "⁴", "l": "ˡ",
+const sups: { [key: string]: string } = {
+    "L": "ᴸ", "I": "ᴵ", "y": "ʸ", "9": "⁹", "0": "⁰", "δ": "ᵟ", "w": "ʷ", "4": "⁴", "l": "ˡ",
     "Z": "ᶻ", "P": "ᴾ", "b": "ᵇ", "7": "⁷", ")": "⁾", "h": "ʰ", "6": "⁶", "W": "ᵂ", "=": "⁼", "χ": "ᵡ", "m": "ᵐ", "-": "⁻",
     "r": "ʳ", "p": "ᵖ", "c": "ᶜ", "v": "ᵛ", "d": "ᵈ", "ϕ": "ᵠ", "θ": "ᶿ", "1": "¹", "T": "ᵀ", "o": "ᴼ", "K": "ᴷ", "e": "ᵉ",
     "G": "ᴳ", "t": "ᵗ", "8": "⁸", "β": "ᵝ", "V": "ⱽ", "M": "ᴹ", "s": "ˢ", "i": "ⁱ", "k": "ᵏ", "α": "ᵅ", "A": "ᴬ", "5": "⁵",
@@ -182,7 +341,8 @@ const sups: {[key: string]: string} = {    "L": "ᴸ", "I": "ᴵ", "y": "ʸ", "9
     "N": "ᴺ", "n": "ⁿ", "B": "ᴮ", "x": "ˣ", "3": "³", "R": "ᴿ", "+": "⁺", "J": "ᴶ"
 };
 
-const subs: {[key: string]: string} = { "1": "₁", ")": "₎", "m": "ₘ", "4": "₄", "j": "ⱼ", "7": "₇", "β": "ᵦ", "8": "₈",
+const subs: { [key: string]: string } = {
+    "1": "₁", ")": "₎", "m": "ₘ", "4": "₄", "j": "ⱼ", "7": "₇", "β": "ᵦ", "8": "₈",
     "2": "₂", "3": "₃", "s": "ₛ", "u": "ᵤ", "χ": "ᵪ", "5": "₅", "t": "ₜ", "h": "ₕ", "-": "₋", "ρ": "ᵨ", "+": "₊",
     "o": "ₒ", "v": "ᵥ", "r": "ᵣ", "6": "₆", "(": "₍", "k": "ₖ", "x": "ₓ", "9": "₉", "=": "₌", "e": "ₑ", "l": "ₗ",
     "i": "ᵢ", "ϕ": "ᵩ", "a": "ₐ", "p": "ₚ", "n": "ₙ", "0": "₀"

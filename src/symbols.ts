@@ -1,4 +1,4 @@
-var symbols: {[key:string]:string} = {
+export const symbols: {[key:string]:string} = {
 	"\\exclam": "!",
 	"\\octothorpe": "#",
 	"\\mathdollar": "$",
@@ -4814,4 +4814,5 @@ var symbols: {[key:string]:string} = {
 	"\\7/8": "⅞",
 	"\\1/": "⅟"
 };
-export default symbols;
+
+export const symbolKeys = Object.keys(symbols)

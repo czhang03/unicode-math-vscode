@@ -221,6 +221,15 @@ export const italicMap = new Map<string, string>([
 
 
 export const calMap = new Map<string, string>([
+    ["E","ℰ"],
+    ["F","ℱ"],
+    ["g","ℊ"],
+    ["H","ℋ"],
+    ["I","ℐ"],
+    ["L","ℒ"],
+    ["M","ℳ"],
+    ["R","ℛ"],
+    ["B","ℬ"],
     ["A", "𝒜"],
     ["C", "𝒞"],
     ["D", "𝒟"],
@@ -266,6 +275,10 @@ export const calMap = new Map<string, string>([
 
 
 export const frakMap = new Map<string, string>([
+    ["H", "ℌ"],
+    ["R", "ℜ"],
+    ["C", "ℭ"],
+    ["Z", "ℨ"],
     ["A", "𝔄"],
     ["B", "𝔅"],
     ["D", "𝔇"],
@@ -317,6 +330,13 @@ export const frakMap = new Map<string, string>([
 
 
 export const bbMap = new Map<string, string>([
+    ["C", "ℂ"],
+    ["H", "ℍ"],
+    ["N", "ℕ"],
+    ["P", "ℙ"],
+    ["Q", "ℚ"],
+    ["R", "ℝ"],
+    ["Z", "ℤ"],
     ["A", "𝔸"],
     ["B", "𝔹"],
     ["D", "𝔻"],

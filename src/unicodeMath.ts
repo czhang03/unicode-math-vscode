@@ -1,24 +1,24 @@
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
     TextEditorEdit, commands, window, CompletionItemKind
-} from "vscode";
-import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./maps";
-import { symbols } from './symbols';
+} from "vscode"
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./maps"
+import { symbols } from './symbols'
 
 
-const SPACE_KEY: string = 'space';
+const SPACE_KEY = 'space'
 
 /**
  * Types of string mappings, usually used for math fonts
  */
 enum StringMapType {
-    Superscript = "Superscript",
-    Subscript = "Subscript",
-    Bold = "Bold",
-    Italic = "Italic",
-    MathCal = "mathcal",
-    MathFrak = "mathfrak",
-    MathBB = "mathbb",
+    superscript = "Superscript",
+    subscript = "Subscript",
+    bold = "Bold",
+    italic = "Italic",
+    mathCal = "mathcal",
+    mathFrak = "mathfrak",
+    mathBB = "mathbb",
 }
 
 
@@ -26,30 +26,30 @@ enum StringMapType {
  * A map that map the prefix to its corresponding maps
  */
 const prefixToMapType: Map<string, StringMapType> = new Map([
-    ["\\^", StringMapType.Superscript],
-    ["\\_", StringMapType.Subscript],
+    ["\\^", StringMapType.superscript],
+    ["\\_", StringMapType.subscript],
 
-    ["\\b:", StringMapType.Bold],
-    ["\\bf:", StringMapType.Bold],
-    ["\\mathbf:", StringMapType.Bold],
-    ["\\mathbf", StringMapType.Bold],
+    ["\\b:", StringMapType.bold],
+    ["\\bf:", StringMapType.bold],
+    ["\\mathbf:", StringMapType.bold],
+    ["\\mathbf", StringMapType.bold],
 
-    ["\\i:", StringMapType.Italic],
-    ["\\it:", StringMapType.Italic],
-    ["\\mathit:", StringMapType.Italic],
-    ["\\mathit", StringMapType.Italic],
+    ["\\i:", StringMapType.italic],
+    ["\\it:", StringMapType.italic],
+    ["\\mathit:", StringMapType.italic],
+    ["\\mathit", StringMapType.italic],
 
-    ["\\cal:", StringMapType.MathCal],
-    ["\\mathcal:", StringMapType.MathCal],
-    ["\\mathcal", StringMapType.MathCal],
+    ["\\cal:", StringMapType.mathCal],
+    ["\\mathcal:", StringMapType.mathCal],
+    ["\\mathcal", StringMapType.mathCal],
 
-    ["\\frak:", StringMapType.MathFrak],
-    ["\\mathfrak:", StringMapType.MathFrak],
-    ["\\mathfrak", StringMapType.MathFrak],
+    ["\\frak:", StringMapType.mathFrak],
+    ["\\mathfrak:", StringMapType.mathFrak],
+    ["\\mathfrak", StringMapType.mathFrak],
 
-    ["\\Bbb:", StringMapType.MathBB],
-    ["\\mathbb:", StringMapType.MathBB],
-    ["\\mathbb", StringMapType.MathBB],
+    ["\\Bbb:", StringMapType.mathBB],
+    ["\\mathbb:", StringMapType.mathBB],
+    ["\\mathbb", StringMapType.mathBB],
 ])
 
 // all the possible prefixes
@@ -58,13 +58,13 @@ const prefixes: string[] = Array.from(prefixToMapType.keys())
 // Give the map type its corresponding map.
 function mapTypeToMap(mapType: StringMapType): Map<string, string> {
     switch(mapType) {
-        case StringMapType.Superscript: return supsMap
-        case StringMapType.Subscript: return subsMap
-        case StringMapType.Bold: return boldMap
-        case StringMapType.Italic: return italicMap
-        case StringMapType.MathCal: return calMap
-        case StringMapType.MathFrak: return frakMap
-        case StringMapType.MathBB: return bbMap
+        case StringMapType.superscript: return supsMap
+        case StringMapType.subscript: return subsMap
+        case StringMapType.bold: return boldMap
+        case StringMapType.italic: return italicMap
+        case StringMapType.mathCal: return calMap
+        case StringMapType.mathFrak: return frakMap
+        case StringMapType.mathBB: return bbMap
     }
 }
 
@@ -154,7 +154,7 @@ export function genCompletions(str: string, target: Range): CompletionItem[] {
 
         const symbolCompletionsItems =
             Object.entries<string>(symbols).map(([inpStr, unicodeChar]) => {
-                const completion = new CompletionItem(inpStr, CompletionItemKind.Constant)
+                const completion: CompletionItem = new CompletionItem(inpStr, CompletionItemKind.Constant)
                 completion.detail = unicodeChar
                 completion.insertText = unicodeChar
                 completion.range = target
@@ -174,7 +174,7 @@ export function genCompletions(str: string, target: Range): CompletionItem[] {
  */
 export function evalPosition(document: TextDocument, position: Position): [Range, string] | null {
     // at the start of the line, there is nothing in front.
-    if (position.character === 0) { return null; }
+    if (position.character === 0) { return null }
     try {
         const lineStart = new Position(position.line, 0)
         const lnRange = new Range(lineStart, position)
@@ -191,46 +191,46 @@ export function evalPosition(document: TextDocument, position: Position): [Range
 
     } catch (e) {
         console.error("unexpected error, while finding word in front of the cursor", e)
-        return null;
+        return null
     }
 }
 
 // legacy code
 // I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
-export function tabCommit(key: string): void {
-    if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return; }
+export async function tabCommit(key: string): Promise<void> {
+    if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return }
 
-    const editor: TextEditor = <TextEditor>window.activeTextEditor;
-    const doKey = () => {
+    const editor: TextEditor = window.activeTextEditor
+    const doKey = async () => {
         if (key === SPACE_KEY) {
-            commands.executeCommand('type', { source: 'keyboard', text: ' ' });
+            await commands.executeCommand('type', { source: 'keyboard', text: ' ' })
         } else {
-            commands.executeCommand(key);
+            await commands.executeCommand(key)
         }
-    };
+    }
 
-    var c = false;
-    editor.edit((editor: TextEditorEdit) => {
+    let c = false
+    await editor.edit((editor: TextEditorEdit) => {
         window.activeTextEditor?.selections.map((v) => {
-            const position = v.start;
+            const position = v.start
             if (window.activeTextEditor) {
                 const [target, word] = evalPosition(window.activeTextEditor.document, position) ?? [null, null]
                 if (target && word) {
                     console.debug(`trying to commit ${word}`)
-                    const changed = convertString(word);
-                    console.debug(`committing to ${changed}`)
+                    const changed = convertString(word)
+                    console.debug(changed ? `committing to ${changed}` : `nothing matched`)
                     if (changed) {
-                        editor.delete(target);
-                        editor.insert(target.start, changed);
-                        c = true;
-                    };
+                        editor.delete(target)
+                        editor.insert(target.start, changed)
+                        c = true
+                    }
                 }
             }
-        });
-    });
+        })
+    })
     // always propagate the space key, or propagate tab
     // only if not used to insert a character
-    if (!c || key === SPACE_KEY) { return doKey(); }
+    if (!c || key === SPACE_KEY) { return doKey() }
 }
 
 

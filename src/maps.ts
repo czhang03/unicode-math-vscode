@@ -70,7 +70,7 @@ export const supsMap = new Map<string, string>([
     ["U", "ᵁ"],
     ["V", "ⱽ"],
     ["W", "ᵂ"],
-]);
+])
 
 
 export const subsMap = new Map<string, string>([
@@ -106,7 +106,7 @@ export const subsMap = new Map<string, string>([
     ["u", "ᵤ"],
     ["v", "ᵥ"],
     ["x", "ₓ"],
-]);
+])
 
 
 export const boldMap = new Map<string, string>([
@@ -162,7 +162,7 @@ export const boldMap = new Map<string, string>([
     ["x", "𝐱"],
     ["y", "𝐲"],
     ["z", "𝐳"],
-]);
+])
 
 
 export const italicMap = new Map<string, string>([
@@ -217,7 +217,7 @@ export const italicMap = new Map<string, string>([
     ["x", "𝑥"],
     ["y", "𝑦"],
     ["z", "𝑧"],
-]);
+])
 
 
 export const calMap = new Map<string, string>([
@@ -271,7 +271,7 @@ export const calMap = new Map<string, string>([
     ["x", "𝓍"],
     ["y", "𝓎"],
     ["z", "𝓏"],
-]);
+])
 
 
 export const frakMap = new Map<string, string>([
@@ -326,7 +326,7 @@ export const frakMap = new Map<string, string>([
     ["x", "𝔵"],
     ["y", "𝔶"],
     ["z", "𝔷"],
-]);
+])
 
 
 export const bbMap = new Map<string, string>([
@@ -402,6 +402,6 @@ export const bbMap = new Map<string, string>([
     ["7", "𝟟"],
     ["8", "𝟠"],
     ["9", "𝟡"],
-]);
+])
 
 

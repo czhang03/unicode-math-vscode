@@ -56,16 +56,15 @@
 		}
 	},
 	"devDependencies": {
+		"@types/mocha": "^10.0.1",
 		"@types/node": "^16.11.7",
 		"@types/vscode": "^1.74.0",
-		"typescript": "^4.9.5",
-
-		"@typescript-eslint/eslint-plugin": "^5.42.0",
-		"@typescript-eslint/parser": "^5.42.0",
-		"eslint": "^8.26.0",
-
+		"@typescript-eslint/eslint-plugin": "^5.54.0",
+		"@typescript-eslint/parser": "^5.54.0",
 		"@vscode/test-electron": "^1.6.1",
-		"@types/mocha": "^10.0.1",
-		"mocha": "^10.2.0"
+		"eslint": "^8.35.0",
+		"eslint-config-prettier": "^8.6.0",
+		"mocha": "^10.2.0",
+		"typescript": "^4.9.5"
 	}
 }

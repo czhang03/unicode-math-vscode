@@ -13,26 +13,30 @@ const SPACE_KEY: string = 'space';
  * @param context the editor context
  */
 export function activate(context: ExtensionContext) {
-    console.debug("extension activated")
+    console.debug("activating extension")
 
-    const ctl = new UnicodeMaths(symbols);
-
-    context.subscriptions.push(languages.registerCompletionItemProvider(
-        {scheme: 'file', language: '*'}, 
-        {provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext){
-            
+    // register the completion provider
+    const completionProvider = languages.registerCompletionItemProvider(
+        '*',
+        {provideCompletionItems(document: TextDocument, position: Position){
+            console.debug("completion triggered, evaluating current position...")
             const [target, word] = evalPosition(document, position);
             if (!target || !word) { return []; }
-            console.debug(`trying to provide completion for ${word}`)
-            return genCompletions(word)
+            console.log(`trying to provide completion for ${word}`)
+            return genCompletions(word, target)
         }},
         "\\"  // trigger completion on slash
-    ));
-
-    context.subscriptions.push(commands.registerCommand('unicode-math-commit_tab', () => ctl.commit('tab')));
+    )
+    context.subscriptions.push(completionProvider);
+    
+    // legacy code
+    const ctl = new UnicodeMaths(symbols);
+    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.commit_tab', () => ctl.commit('tab')));
     context.subscriptions.push(commands.registerCommand('unicode-math-symbols_html', () => {
         commands.executeCommand('open', Uri.parse('https://github.com/mvoidex/UnicodeMath/blob/master/table.md'));
     }));
+
+    console.debug("extension activated")
 }
 
 /**
@@ -85,7 +89,7 @@ const prefixToMapType: Map<string, StringMapType> = new Map([
 ])
 
 // all the possible prefixes
-const prefixes = Object.keys(prefixToMapType)
+const prefixes: string[] = Array.from(prefixToMapType.keys())
 
 // Give the map type its corresponding map.
 function mapTypeToMap(mapType: StringMapType): Map<string, string> {
@@ -137,7 +141,7 @@ function stripPrefix(word: string): [StringMapType, string] | null {
  */
 function mapString(str: string, type: StringMapType): string {
     return str.split("")
-        .map(char => mapTypeToMap(type).get(char) ?? "")
+        .map(char => mapTypeToMap(type).get(char) ?? char)
         .join("")
 }
 
@@ -158,35 +162,53 @@ function convertString(str: string) : string | null {
     else {return mapString(withoutPrefix, mapType)}
 }
 
+
 /**
  * Generate completion based on the string at cursor
  * @param str the user inputted string at the cursor
+ * @param target the range (starting position to end position) of the str including the slash in the beginning
  * @returns a list of completion items from the current string.
  */
-function genCompletions(str: string): CompletionItem[]{
-    // if the string matches any prefix
+function genCompletions(str: string, target: Range): CompletionItem[]{
+    console.debug(`generating completion for ${str}`)
+
+    // special case if the string matches any prefix
     // then just return how current string will be converted
     const [mapType, withoutPrefix] = stripPrefix(str) ?? [null, null]
-    if (mapType !== null && withoutPrefix !== null) {
-        return [new CompletionItem(mapString(str, mapType))]
+    if (mapType && withoutPrefix) {
+        console.debug(`matched prefix of ${mapType}`)
+
+        const converted = mapString(withoutPrefix, mapType)
+        const completion = new CompletionItem(str, CompletionItemKind.Text)
+        completion.range = target
+        completion.detail = converted
+        completion.insertText = converted
+
+        return [completion]
     }
 
-    // if the string don't match any prefix
-    // then find generate completion for prefix or symbols
-    const prefixCompletions = prefixes.filter(prefix => prefix.startsWith(str))
-                                .map(prefix => {
-                                    const completion = new CompletionItem(prefix, CompletionItemKind.Keyword)
-                                    // retrigger completion after prefix, to complete the map string
-                                    completion.command = 
-                                        { command: 'editor.action.triggerSuggest', title: 'completing after prefix'} 
-                                    return completion
-                                })
-    const symbolCompletions = Object.entries<string>(symbols)
-                                .filter(([inpStr, unicodeChar]) => inpStr[0].startsWith(str))
-                                .map(([inpStr, unicodeChar]) => 
-                                    new CompletionItem({label: unicodeChar, detail: inpStr}))
+    // default case, return all the possible completion items (all the unicode and prefixes)
+    else {
+        const prefixCompletionItems = prefixes.map(prefix => {
+            const completion = new CompletionItem(prefix, CompletionItemKind.Keyword)
+            completion.range = target
+            // retrigger completion after prefix, to complete the map string
+            completion.command = 
+                { command: 'editor.action.triggerSuggest', title: 'completing after prefix'} 
+            return completion
+        })
+        
+        const symbolCompletionsItems = 
+            Object.entries<string>(symbols).map(([inpStr, unicodeChar]) => {
+                const completion = new CompletionItem(inpStr, CompletionItemKind.Constant) 
+                completion.detail = unicodeChar
+                completion.insertText = unicodeChar
+                completion.range = target
+                return completion
+            })
 
-    return prefixCompletions.concat(symbolCompletions)
+        return prefixCompletionItems.concat(symbolCompletionsItems)
+    }
 }
 
 

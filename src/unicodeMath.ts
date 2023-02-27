@@ -55,7 +55,14 @@ const prefixToMapType: Map<string, StringMapType> = new Map([
 // all the possible prefixes
 const prefixes: string[] = Array.from(prefixToMapType.keys())
 
-// Give the map type its corresponding map.
+
+/**
+ * Given a map type, get the map corresponding to that type
+ * 
+ * @param mapType the type of the map
+ * @returns a map mapping a "char" to its corresponding formatted version 
+ *  The key and value of the map needs to be singleton strings
+ */
 function mapTypeToMap(mapType: StringMapType): Map<string, string> {
     switch(mapType) {
         case StringMapType.superscript: return supsMap
@@ -102,6 +109,7 @@ function mapString(str: string, type: StringMapType): string {
 /**
  * Given a user inputted string, convert it into unicode, 
  * return null if it cannot be converted
+ * 
  * @param str a input string, typed in the editor by the user
  * @returns the unicode version of the input string
  */
@@ -119,6 +127,7 @@ function convertString(str: string): string | null {
 
 /**
  * Generate completion based on the string at cursor
+ * 
  * @param str the user inputted string at the cursor
  * @param target the range (starting position to end position) of the str including the slash in the beginning
  * @returns a list of completion items from the current string.
@@ -168,6 +177,7 @@ export function genCompletions(str: string, target: Range): CompletionItem[] {
 
 /**
  * check the word (from the last "\" to current cursor) at the current cursor position
+ * 
  * @param document the text document that is on the screen
  * @param position position of the cursor
  * @returns the "word" in front of the cursor and its range, starting from (including) "\"
@@ -195,8 +205,18 @@ export function evalPosition(document: TextDocument, position: Position): [Range
     }
 }
 
-// legacy code
-// I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
+
+/**
+ * I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
+ * 
+ * This function do the real editing when user commit using a tab
+ * Notice that this do not handle the completion functionality
+ * and its mutually exclusive with completion, 
+ * i.e. if user get a unicode char using completion, then they don't need to invoke this function
+ * 
+ * @param key the keypress that triggered this function
+ * @returns nothing
+ */
 export async function tabCommit(key: string): Promise<void> {
     if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return }
 
@@ -209,6 +229,7 @@ export async function tabCommit(key: string): Promise<void> {
         }
     }
 
+    // TODO: I don't like variables, but there seems to be no way to get the result out.
     let c = false
     await editor.edit((editor: TextEditorEdit) => {
         window.activeTextEditor?.selections.map((v) => {

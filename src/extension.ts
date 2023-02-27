@@ -3,6 +3,7 @@ import {evalPosition, genCompletions, tabCommit} from "./unicodeMath"
 
 /**
  * Function to run when the extension is activated 
+ * 
  * @param context the editor context
  */
 export function activate(context: ExtensionContext) {

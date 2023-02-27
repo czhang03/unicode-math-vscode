@@ -20,7 +20,7 @@ export function activate(context: ExtensionContext) {
         {
             provideCompletionItems(document: TextDocument, position: Position) {
                 console.debug("completion triggered, evaluating current position...")
-                const [target, word] = evalPosition(document, position);
+                const [target, word] = evalPosition(document, position) ?? [null, null]
                 if (!target || !word) { return []; }
                 console.log(`trying to provide completion for ${word}`)
                 return genCompletions(word, target)
@@ -202,32 +202,37 @@ function genCompletions(str: string, target: Range): CompletionItem[] {
 }
 
 
-// legacy code
-// this implementation has a loser meaning of word (anything starting with \)
-function getWordRangeAtPosition(document: TextDocument, position: Position): [Range, string] {
-    const lineStart = new Position(position.line, 0);
-    const lnRange = new Range(lineStart, position);
-    const line = document.getText(lnRange);
-    const slash = line.lastIndexOf('\\');
-    const word = line.slice(slash).trim();
-    const start = new Position(position.line, slash);
-    const end = start.translate(undefined, word.length);
-    return [new Range(start, end), word];
-}
-
-
-function evalPosition(document: TextDocument, position: Position): [Range, string] | [null, null] {
-    if (position.character === 0) { return [null, null]; }
+/**
+ * check the word (from the last "\" to current cursor) at the current cursor position
+ * @param document the text document that is on the screen
+ * @param position position of the cursor
+ * @returns the "word" in front of the cursor and its range, starting from (including) "\"
+ */
+function evalPosition(document: TextDocument, position: Position): [Range, string] | null {
+    // at the start of the line, there is nothing in front.
+    if (position.character === 0) { return null; }
     try {
-        const [range, word] = getWordRangeAtPosition(document, position);
-        return !word || !word.startsWith('\\') ? [null, null] : [range, word];
+        const lineStart = new Position(position.line, 0)
+        const lnRange = new Range(lineStart, position)
+        const line = document.getText(lnRange)
+
+        const slash = line.lastIndexOf('\\')
+        if (slash < 0) {console.error(`unexpected error, "\\" is not found before the cursor: \n${line}`); return null}
+
+        const word = line.slice(slash)
+        const start = new Position(position.line, slash)
+        const end = start.translate(undefined, word.length)
+
+        return [new Range(start, end), word]
+
     } catch (e) {
-        console.error(e)
-        return [null, null];
+        console.error("unexpected error, while finding word in front of the cursor", e)
+        return null;
     }
 }
 
-
+// legacy code
+// I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
 function tabCommit(key: string): void {
     if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return; }
 
@@ -245,7 +250,7 @@ function tabCommit(key: string): void {
         window.activeTextEditor?.selections.map((v) => {
             const position = v.start;
             if (window.activeTextEditor) {
-                const [target, word] = evalPosition(window.activeTextEditor.document, position);
+                const [target, word] = evalPosition(window.activeTextEditor.document, position) ?? [null, null]
                 if (target && word) {
                     console.debug(`trying to commit ${word}`)
                     const changed = convertString(word);

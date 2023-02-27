@@ -255,3 +255,8 @@ export async function tabCommit(key: string): Promise<void> {
 }
 
 
+export const testing = {
+    prefixes,
+    stripPrefix,
+    convertString
+}

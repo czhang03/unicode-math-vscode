@@ -2,7 +2,7 @@ import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
     TextEditorEdit, commands, window, CompletionItemKind
 } from "vscode"
-import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./maps"
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./charMaps"
 import { symbols } from './symbols'
 
 
@@ -118,7 +118,7 @@ function convertString(str: string): string | null {
     const [mapType, withoutPrefix] = stripPrefix(str) ?? [null, null]
 
     // if a prefix cannot be found, then fallback to search in symbols
-    if (mapType === null && withoutPrefix === null) { return symbols[str] || null }
+    if (mapType === null && withoutPrefix === null) { return symbols.get(str) || null }
 
     // if prefix can be found, using prefix
     else { return mapString(withoutPrefix, mapType) }
@@ -162,7 +162,7 @@ export function genCompletions(str: string, target: Range): CompletionItem[] {
         })
 
         const symbolCompletionsItems =
-            Object.entries<string>(symbols).map(([inpStr, unicodeChar]) => {
+            Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
                 const completion: CompletionItem = new CompletionItem(inpStr, CompletionItemKind.Constant)
                 completion.detail = unicodeChar
                 completion.insertText = unicodeChar

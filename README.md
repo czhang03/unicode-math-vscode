@@ -72,6 +72,8 @@ This project is definitely not possible without these projects.
 
 # Roadmap
 
-- [ ] disable extension in particular language (in particular LaTeX)
-- [ ] reverse search prefix or latex command
-- [ ] more tests
+- [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to []).
+- [ ] automated CI dependency update.
+- [ ] automated CI release.
+- [ ] reverse search prefix or latex command.
+- [ ] more tests.

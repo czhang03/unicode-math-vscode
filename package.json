@@ -2,14 +2,14 @@
 	"name": "unicode-math-input",
 	"displayName": "Unicode Math Input",
 	"description": "Easy way to insert unicode math symbols ∀ programming languages",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"publisher": "czhang03",
 	"license": "LGPL-3.0",
-	"homepage": "https://github.com/czhang03/unicode-math-input",
+	"homepage": "https://github.com/czhang03/unicode-math-vscode",
 	"icon": "icon.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/czhang03/unicode-math-input"
+		"url": "https://github.com/czhang03/unicode-math-vscode"
 	},
 	"engines": {
 		"vscode": "^1.74.0"
@@ -72,5 +72,8 @@
 		"fast-check": "^3.7.0",
 		"mocha": "^10.2.0",
 		"typescript": "^4.9.5"
+	},
+	"dependencies": {
+		"ovsx": "^0.8.0"
 	}
 }

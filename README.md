@@ -72,7 +72,7 @@ This project is definitely not possible without these projects.
 
 # Roadmap
 
-- [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to []).
+- [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to `[]`).
 - [ ] automated CI dependency update.
 - [ ] automated CI release.
 - [ ] reverse search prefix or latex command.

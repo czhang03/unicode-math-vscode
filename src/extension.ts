@@ -26,8 +26,8 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(completionProvider)
 
     // register tab commit
-    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.commit_tab', () => tabCommit('tab')))
-    context.subscriptions.push(commands.registerCommand('unicode-math-vscode.symbols_html', () => {
+    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', () => tabCommit('tab')))
+    context.subscriptions.push(commands.registerCommand('unicode-math-input.symbols_html', () => {
         void commands.executeCommand('open', Uri.parse('https://github.com/mvoidex/UnicodeMath/blob/master/table.md'))
     }))
 

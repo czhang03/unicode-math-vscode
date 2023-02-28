@@ -1,41 +1,77 @@
-# unicode-math-vscode README
-[Download Url](https://marketplace.visualstudio.com/items?itemName=GuidoTapia2.unicode-math-vscode)
-
-This project is a port from the great [UnicodeMath](https://github.com/mvoidex/UnicodeMath) 
-sublime text plugin by [Alexandr Ruchkin](https://github.com/mvoidex). See original documentation for more details.
+# Unicode Math Input For VSCode
 
 # Supported Features
 
-## Autocomplete
-All commands described below can be executed with either the [tab] or [space] key.  Executing a command with [tab] will insert the special symbols and leave the cursor next to the inserted symbol.  [space] will add a space after the inserted symbol.
+## Autocompletion
 
-## Insert Symbols
-Snippets to automatically convert symbol names to their corresponding 
-unicode character.  For instance typing '&#92;all' + [tab] will 
-display '∀'. For a full list of supported symbols 
-see [list here](https://github.com/mvoidex/UnicodeMath/blob/master/table.md). This page has also
-been added to VS Code, so just press CTL + SHIFT + P and type 'Symbols', 
-select "Unicode Math Symbols Guide" to see the full list of supported symbols.
+In any language, when you type `\`, this extension will start suggesting possible latex input. 
+Autocompletion will also preview the character that you are currently typing
 
-## Superscript and Subscript
-To convert a portion of text to a superscript or subscript just type 
-'&#92;\_123' or '&#92;^123' + [tab].  This will display ₁₂₃ or ¹²³.  For a full list of supported
-subscript and superscript characters [see here](https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts).
+**NOTICE**, when [LaTeX Workshop](https://github.com/James-Yu/LaTeX-Workshop) is activated, 
+the `\` trigger seems to be taken by LaTeX Workshop, so completion won't work,
+a workaround is type `\\`, then delete the first `\`. 
 
-## Bold and Italics
-To insert a bold character the '&#92;mbf\<character\>'  can be used. For instance '&#92;mbfX' + [space] will display '𝐗 '. Correspondingly, italics can be inserted with the '&#92;mitX', resulting in '𝑋'.
 
-If a sequence of characters needs to be bolded or italicised then the following sequences will work:
-'&#92;b:matrix' or '&#92;i:matrix' resulting in '𝐦𝐚𝐭𝐫𝐢𝐱' and '𝑚𝑎𝑡𝑟𝑖𝑥'.
+## Tab Commit
 
-## Special
+When you press tab after a LaTeX symbol, it will convert the LaTeX symbol into unicode.
+The commit key can be changed by changing the keybinding for `unicode-math-input.commit`.
 
-You can also convert a list of chars with special prefix via \prefix:abc, which
-will be equivalent to \prefixa \prefixb and \prefixc, for example:
+## Prefix 
 
-\Bbb:ABCabc → 𝔸𝔹ℂ𝕒𝕓𝕔
+Currently we support the following prefixes:
+
+| Prefix  | LaTeX Command |
+| --- | --- |
+| `\^`  | superscript |
+| `\_`  | subscript |
+|`\b:` | bold |
+|`\bf:` | bold |
+|`\mathbf:` | bold |
+|`\mathbf` | bold |
+|`\i:` | italic |
+|`\it:` | italic |
+|`\mathit:` | italic |
+|`\mathit` | italic |
+|`\cal:` | `\mathcal` |
+|`\mathcal:` | `\mathcal` |
+|`\mathcal` | `\mathcal` |
+|`\frak:` | `\mathfrak` |
+|`\mathfrak:` | `\mathfrak` |
+|`\mathfrak` | `\mathfrak` |
+|`\Bbb:` | `\mathbb` |
+|`\mathbb:` | `\mathbb` |
+|`\mathbb` | `\mathbb` |
+
+When you type a prefix, then a word (without space),
+the extension will commit the unicode version of that font.
+For example when you type `\it:text<tab>`, `\it:text` will be changed to `𝑡𝑒𝑠𝑡`
+
+**NOTICE**: not all common characters are supported in unicode, 
+the extension will try its best to convert everything. 
+For example `\_lazyfox<tab>` will give `ₗₐzyfₒₓ`.
 
 # License
 
 This extension is licensed under LGPLv3.0,
 because the license of [ibus-latex-table](https://github.com/moebiuscurve/ibus-table-others/blob/main/tables/latex.txt) is under LGPL
+
+# Acknowledgement 
+
+This project is a rewrite of [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
+by [Guido Tapia](https://github.com/gatapia). 
+
+The mapping from latex to unicode is provided by 
+
+- [UnicodeMath](https://github.com/mvoidex/UnicodeMath), which inspired[Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
+- [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
+- [ibus-latex-table](https://github.com/moebiuscurve/ibus-table-others/blob/main/tables/latex.txt)
+
+This project is definitely not possible without these projects.
+
+
+# Roadmap
+
+- [ ] disable extension in particular language (in particular LaTeX)
+- [ ] reverse search prefix or latex command
+- [ ] more tests

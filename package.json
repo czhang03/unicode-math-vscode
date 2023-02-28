@@ -1,15 +1,15 @@
 {
-	"name": "unicode-math-vscode",
-	"displayName": "Fast Unicode Math Characters",
-	"description": "Easy insertion of unicode math symbols in ∀ programming languages",
-	"version": "0.4",
+	"name": "unicode-math-input",
+	"displayName": "Unicode Math Input",
+	"description": "Easy way to insert unicode math symbols ∀ programming languages",
+	"version": "0.4.0",
 	"publisher": "Cheng Zhang",
 	"license": "lgpl-3.0",
-	"homepage": "https://github.com/czhang03/unicode-math-vscode",
+	"homepage": "https://github.com/czhang03/unicode-math-input",
 	"icon": "icon.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/czhang03/unicode-math-vscode"
+		"url": "https://github.com/czhang03/unicode-math-input"
 	},
 	"engines": {
 		"vscode": "^1.74.0"
@@ -31,14 +31,14 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "unicode-math-vscode.symbols_html",
+				"command": "unicode-math-input.symbols_html",
 				"title": "Unicode Math Symbols Guide",
 				"category": "Unicode Math"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "unicode-math-vscode.commit_tab",
+				"command": "unicode-math-input.commit",
 				"key": "tab",
 				"when": "editorTextFocus && !inlineSuggestionVisible && !suggestWidgetVisible && !editorTabMovesFocus && !inSnippetMode && !hasSnippetCompletions && !editorTabMovesFocus && !editorReadonly"
 			}
@@ -65,6 +65,7 @@
 		"@typescript-eslint/eslint-plugin": "^5.54.0",
 		"@typescript-eslint/parser": "^5.54.0",
 		"@vscode/test-electron": "^1.6.1",
+		"@vscode/vsce": "^2.18.0",
 		"eslint": "^8.35.0",
 		"eslint-config-prettier": "^8.6.0",
 		"eslint-plugin-jsdoc": "^40.0.0",

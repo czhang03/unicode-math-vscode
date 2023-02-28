@@ -1,6 +1,27 @@
 # Unicode Math Input For VSCode
 
-# Supported Features
+A fast and intuitive way to insert unicode math characters (and even Emoji 😯) using LaTeX command in any document!
+
+# Install And Info
+
+## From OpenVSX
+
+![Open VSX Version](https://img.shields.io/open-vsx/v/czhang03/unicode-math-input)
+![Open VSX Rating](https://img.shields.io/open-vsx/rating/czhang03/unicode-math-input)
+
+## From VSCode Marketplace
+
+![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/czhang03.unicode-math-input)
+![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/czhang03.unicode-math-input)
+![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/czhang03.unicode-math-input)
+
+## From GitHub Release
+
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/czhang03/unicode-math-vscode)
+![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/czhang03/unicode-math-vscode)
+
+
+# Features
 
 ## Autocompletion
 
@@ -77,6 +98,7 @@ This project is definitely not possible without these projects.
 
 - [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to `[]`).
 - [ ] automated CI dependency update.
-- [ ] automated CI release.
+- [ ] automated CI documentation.
+- [ ] Screenshots/GIF on the readme
 - [ ] reverse search prefix or latex command.
 - [ ] more tests.

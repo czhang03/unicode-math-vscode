@@ -67,6 +67,9 @@ The mapping from latex to unicode is provided by
 - [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
 - [ibus-latex-table](https://github.com/moebiuscurve/ibus-table-others/blob/main/tables/latex.txt)
 
+The icon is provided by [Material Design Icons](https://pictogrammers.com/library/mdi/icon/math-integral/), 
+released under Apache2.0 license.
+
 This project is definitely not possible without these projects.
 
 

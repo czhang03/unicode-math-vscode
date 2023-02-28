@@ -6,18 +6,18 @@ A fast and intuitive way to insert unicode math characters (and even Emoji 😯)
 
 ## From OpenVSX
 
-![Open VSX Version](https://img.shields.io/open-vsx/v/czhang03/unicode-math-input)
-![Open VSX Rating](https://img.shields.io/open-vsx/rating/czhang03/unicode-math-input)
+[![Open VSX Version](https://img.shields.io/open-vsx/v/czhang03/unicode-math-input)](https://open-vsx.org/extension/czhang03/unicode-math-input/)
+[![Open VSX Rating](https://img.shields.io/open-vsx/rating/czhang03/unicode-math-input)](https://open-vsx.org/extension/czhang03/unicode-math-input/)
 
 ## From VSCode Marketplace
 
-![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/czhang03.unicode-math-input)
-![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/czhang03.unicode-math-input)
-![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/czhang03.unicode-math-input)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/czhang03.unicode-math-input)](https://marketplace.visualstudio.com/items?itemName=czhang03.unicode-math-input)
+[![Visual Studio Marketplace Last Updated](https://img.shields.io/visual-studio-marketplace/last-updated/czhang03.unicode-math-input)](https://marketplace.visualstudio.com/items?itemName=czhang03.unicode-math-input)
+[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/czhang03.unicode-math-input)](https://marketplace.visualstudio.com/items?itemName=czhang03.unicode-math-input)
 
 ## From GitHub Release
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/czhang03/unicode-math-vscode)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/czhang03/unicode-math-vscode)](https://github.com/czhang03/unicode-math-vscode/releases)
 ![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/czhang03/unicode-math-vscode)
 
 

@@ -99,6 +99,8 @@ This project is definitely not possible without these projects.
 - [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to `[]`).
 - [ ] automated CI dependency update.
 - [ ] automated CI documentation.
+- [ ] automatically pull character from upstream
+- [ ] automatically PR to upstream
 - [ ] when start with prefix, only convert the string when all can be converted.
 - [ ] Screenshots/GIF on the readme
 - [ ] reverse search prefix or latex command.

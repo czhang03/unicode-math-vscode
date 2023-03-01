@@ -100,10 +100,19 @@ function stripPrefix(word: string): [StringMapType, string] | null {
  * @param type the conversion type (typically math fonts)
  * @returns the unicode version of the converted string
  */
-function mapString(str: string, type: StringMapType): string {
-    return str.split("")
-        .map(char => mapTypeToMap(type).get(char) ?? char)
-        .join("")
+function mapString(str: string, type: StringMapType): string | null {
+    const mappedArr = str.split("")
+        .map(char => mapTypeToMap(type).get(char) ?? null)
+    
+
+    if (mappedArr.filter((elem) => elem === null)) {
+        // if there is string that cannot be converted
+        // return a failure
+        return null
+    } else {
+        // otherwise return a string
+        return mappedArr.join("")
+    }
 }
 
 /**

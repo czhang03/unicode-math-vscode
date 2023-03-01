@@ -68,9 +68,9 @@ When you type a prefix, then a word (without space),
 the extension will commit the unicode version of that font.
 For example when you type `\it:text<tab>`, `\it:text` will be changed to `𝑡𝑒𝑠𝑡`
 
-**NOTICE**: not all common characters are supported in unicode, 
-the extension will try its best to convert everything. 
-For example `\_lazyfox<tab>` will give `ₗₐzyfₒₓ`.
+**NOTICE**: not all math font (including super and subscript) of common characters are supported in unicode.
+When the char do not have the math font, this extension will not convert the string at all.
+For example `\_lazyfox<tab>` will not change `\_lazyfox`, because `y` do not have a subscript version in the map.
 
 # License
 
@@ -96,12 +96,12 @@ This project is definitely not possible without these projects.
 
 # Roadmap
 
+- [x] when start with prefix, only convert the string when all can be converted.
 - [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to `[]`).
 - [ ] automated CI dependency update.
 - [ ] automated CI documentation.
 - [ ] automatically pull character from upstream
 - [ ] automatically PR to upstream
-- [ ] when start with prefix, only convert the string when all can be converted.
 - [ ] Screenshots/GIF on the readme
 - [ ] reverse search prefix or latex command.
 - [ ] more tests.

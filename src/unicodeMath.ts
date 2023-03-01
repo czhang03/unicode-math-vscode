@@ -151,12 +151,16 @@ export function genCompletions(str: string, target: Range): CompletionItem[] {
         console.debug(`matched prefix of ${mapType}`)
 
         const converted = mapString(withoutPrefix, mapType)
-        const completion = new CompletionItem(str, CompletionItemKind.Text)
-        completion.range = target
-        completion.detail = converted
-        completion.insertText = converted
+        // do not generate completion if the string cannot be converted
+        if (converted === null) {return []}
+        else {
+            const completion = new CompletionItem(str, CompletionItemKind.Text)
+            completion.range = target
+            completion.detail = converted
+            completion.insertText = converted
 
-        return [completion]
+            return [completion]
+        }
     }
 
     // default case, return all the possible completion items (all the unicode and prefixes)

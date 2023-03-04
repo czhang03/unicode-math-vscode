@@ -47,6 +47,12 @@ module.exports = {
 		'@typescript-eslint/no-explicit-any': "error",
 		'@typescript-eslint/explicit-module-boundary-types': 0,
 		'@typescript-eslint/no-non-null-assertion': "error",
+        "@typescript-eslint/no-unused-vars": ["warn", {
+            "varsIgnorePattern": "^_",
+            "argsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_",
+            "destructuredArrayIgnorePattern": "^_",
+        }],
         "semi": [ "error", "never" ],
         "curly": "warn",
         "eqeqeq": [ "error", "always" ],

@@ -5,6 +5,24 @@ import {
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./charMaps"
 import { symbols } from './symbols'
 
+/**
+ * Give the max of an array with respect to some function
+ * @param by compute the values to compare 
+ * @param arr the array to compare
+ * @returns the max element in arr with respect to `by`, and `null` if the array is empty
+ * */
+function maxBy<T, T_comp>(by: (elem:T) => T_comp, arr: Array<T>): T | null {
+    if (arr.length === 0) {return null}
+    else{
+        const [head, tail] = [arr[1], arr.slice(1)]
+        return tail.reduce(
+            (elem1, elem2) => by(elem1) >= by(elem2) ? elem1 : elem2, head
+        )
+    }
+}
+
+
+const triggerStrs = ['\\']
 
 const SPACE_KEY = 'space'
 
@@ -26,30 +44,30 @@ enum StringMapType {
  * A map that map the prefix to its corresponding maps
  */
 const prefixToMapType: Map<string, StringMapType> = new Map([
-    ["\\^", StringMapType.superscript],
-    ["\\_", StringMapType.subscript],
+    ["^", StringMapType.superscript],
+    ["_", StringMapType.subscript],
 
-    ["\\b:", StringMapType.bold],
-    ["\\bf:", StringMapType.bold],
-    ["\\mathbf:", StringMapType.bold],
-    ["\\mathbf", StringMapType.bold],
+    ["b:", StringMapType.bold],
+    ["bf:", StringMapType.bold],
+    ["mathbf:", StringMapType.bold],
+    ["mathbf", StringMapType.bold],
 
-    ["\\i:", StringMapType.italic],
-    ["\\it:", StringMapType.italic],
-    ["\\mathit:", StringMapType.italic],
-    ["\\mathit", StringMapType.italic],
+    ["i:", StringMapType.italic],
+    ["it:", StringMapType.italic],
+    ["mathit:", StringMapType.italic],
+    ["mathit", StringMapType.italic],
 
-    ["\\cal:", StringMapType.mathCal],
-    ["\\mathcal:", StringMapType.mathCal],
-    ["\\mathcal", StringMapType.mathCal],
+    ["cal:", StringMapType.mathCal],
+    ["mathcal:", StringMapType.mathCal],
+    ["mathcal", StringMapType.mathCal],
 
-    ["\\frak:", StringMapType.mathFrak],
-    ["\\mathfrak:", StringMapType.mathFrak],
-    ["\\mathfrak", StringMapType.mathFrak],
+    ["frak:", StringMapType.mathFrak],
+    ["mathfrak:", StringMapType.mathFrak],
+    ["mathfrak", StringMapType.mathFrak],
 
-    ["\\Bbb:", StringMapType.mathBB],
-    ["\\mathbb:", StringMapType.mathBB],
-    ["\\mathbb", StringMapType.mathBB],
+    ["Bbb:", StringMapType.mathBB],
+    ["mathbb:", StringMapType.mathBB],
+    ["mathbb", StringMapType.mathBB],
 ])
 
 // all the possible prefixes
@@ -85,7 +103,11 @@ function mapTypeToMap(mapType: StringMapType): Map<string, string> {
  */
 function stripPrefix(word: string): [StringMapType, string] | null {
     const validPrefix = prefixes.filter((prefix) => word.startsWith(prefix))
-    const longestPrefix = validPrefix.reduce((p1, p2) => p1.length >= p2.length ? p1 : p2, "")
+
+    // compute the longest prefix, if there is no valid prefix, return null
+    const longestPrefix = maxBy((prefix) => prefix.length, validPrefix)
+    if (longestPrefix === null) {return null}
+
     const wordWithoutPrefix = word.slice(longestPrefix.length)
     const mapType = prefixToMapType.get(longestPrefix)
 

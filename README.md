@@ -29,8 +29,9 @@ In any language, when you type `\`, this extension will start suggesting possibl
 Autocompletion will also preview the character that you are currently typing
 
 **NOTICE**, when [LaTeX Workshop](https://github.com/James-Yu/LaTeX-Workshop) is activated, 
-the `\` trigger seems to be taken by LaTeX Workshop, so completion won't work,
-a workaround is type `\\`, then delete the first `\`. 
+the `\` trigger seems to be taken by LaTeX Workshop, 
+you can set [custom trigger string](#custom-trigger-string) in the setting. 
+I personally set the trigger strings as `["."]` in my LaTeX project. 
 
 
 ## Tab Commit
@@ -38,39 +39,45 @@ a workaround is type `\\`, then delete the first `\`.
 When you press tab after a LaTeX symbol, it will convert the LaTeX symbol into unicode.
 The commit key can be changed by changing the keybinding for `unicode-math-input.commit`.
 
+## Custom Trigger String
+
+User can set custom trigger string from setting besides `\`.
+they can be any strings, even `"LaTeX"`, and there can be multiple ones.
+To disable this extension (typically used in LaTeX workspace),
+just set the trigger strings to empty list.
+
 ## Prefix 
 
 Currently we support the following prefixes:
 
 | Prefix  | LaTeX Command |
 | --- | --- |
-| `\^`  | superscript |
-| `\_`  | subscript |
-|`\b:` | bold |
-|`\bf:` | bold |
-|`\mathbf:` | bold |
-|`\mathbf` | bold |
-|`\i:` | italic |
-|`\it:` | italic |
-|`\mathit:` | italic |
-|`\mathit` | italic |
-|`\cal:` | `\mathcal` |
-|`\mathcal:` | `\mathcal` |
-|`\mathcal` | `\mathcal` |
-|`\frak:` | `\mathfrak` |
-|`\mathfrak:` | `\mathfrak` |
-|`\mathfrak` | `\mathfrak` |
-|`\Bbb:` | `\mathbb` |
-|`\mathbb:` | `\mathbb` |
-|`\mathbb` | `\mathbb` |
+| `^`  | superscript |
+| `_`  | subscript |
+|`b:` | bold |
+|`bf:` | bold |
+|`mathbf:` | bold |
+|`mathbf` | bold |
+|`i:` | italic |
+|`it:` | italic |
+|`mathit:` | italic |
+|`mathit` | italic |
+|`cal:` | `\mathcal` |
+|`mathcal:` | `\mathcal` |
+|`mathcal` | `\mathcal` |
+|`frak:` | `\mathfrak` |
+|`mathfrak:` | `\mathfrak` |
+|`mathfrak` | `\mathfrak` |
+|`Bbb:` | `\mathbb` |
+|`mathbb:` | `\mathbb` |
+|`mathbb` | `\mathbb` |
 
-When you type a prefix, then a word (without space),
+When you type a trigger string (like `\`) followed by prefix, then a word (without space),
 the extension will commit the unicode version of that font.
 For example when you type `\it:text<tab>`, `\it:text` will be changed to `𝑡𝑒𝑠𝑡`
 
 **NOTICE**: not all math font (including super and subscript) of common characters are supported in unicode.
-When the char do not have the math font, this extension will not convert the string at all.
-For example `\_lazyfox<tab>` will not change `\_lazyfox`, because `y` do not have a subscript version in the map.
+When the char do not have the math font, the extension will not convert anything. 
 
 # License
 
@@ -84,7 +91,7 @@ by [Guido Tapia](https://github.com/gatapia).
 
 The mapping from latex to unicode is provided by 
 
-- [UnicodeMath](https://github.com/mvoidex/UnicodeMath), which inspired[Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
+- [UnicodeMath](https://github.com/mvoidex/UnicodeMath), which inspired [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
 - [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
 - [ibus-latex-table](https://github.com/moebiuscurve/ibus-table-others/blob/main/tables/latex.txt)
 
@@ -96,8 +103,7 @@ This project is definitely not possible without these projects.
 
 # Roadmap
 
-- [x] when start with prefix, only convert the string when all can be converted.
-- [ ] custom trigger char other than `\` for each language (disable completion in language by setting trigger characters to `[]`).
+- [ ] push a warning when commit failed with prefix.
 - [ ] automated CI dependency update.
 - [ ] automated CI documentation.
 - [ ] automatically pull character from upstream

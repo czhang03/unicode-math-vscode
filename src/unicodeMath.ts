@@ -15,31 +15,14 @@ import { symbols } from './symbols'
 function maxBy<T, TComp>(by: (elem:T) => TComp, arr: Array<T>): T | null {
     if (arr.length === 0) {return null}
     else{
-        const [head, tail] = [arr[1], arr.slice(1)]
+        const [head, tail] = [arr[0], arr.slice(1)]
         return tail.reduce(
             (elem1, elem2) => by(elem1) >= by(elem2) ? elem1 : elem2, head
         )
     }
 }
 
-/**
- * Give the max of an array
- *
- * @param arr the array to compare
- * @returns the max element in arr and `null` if the array is empty
- */
-function max<T>(arr: Array<T>): T | null {
-    if (arr.length === 0) {return null}
-    else{
-        const [head, tail] = [arr[1], arr.slice(1)]
-        return tail.reduce(
-            (elem1, elem2) => elem1 >= elem2 ? elem1 : elem2, head
-        )
-    }
-}
-
-
-const triggerStrs = ['\\']
+export const triggerStrs = ['.']
 
 const SPACE_KEY = 'space'
 
@@ -144,7 +127,7 @@ function mapString(str: string, type: StringMapType): string | null {
         .map(char => mapTypeToMap(type).get(char) ?? null)
     
 
-    if (mappedArr.filter((elem) => elem === null)) {
+    if (mappedArr.filter((elem) => elem === null).length !== 0) {
         // if there is string that cannot be converted
         // return a failure
         return null
@@ -181,7 +164,7 @@ function convertString(str: string): string | null {
  * @returns a list of completion items from the current string.
  */
 function genCompletions(str: string, target: Range): CompletionItem[] {
-    console.debug(`generating completion for ${str}`)
+    console.debug(`completion triggered, current word is ${str}`)
 
     // special case if the string matches any prefix
     // then just return how current string will be converted
@@ -204,9 +187,12 @@ function genCompletions(str: string, target: Range): CompletionItem[] {
 
     // default case, return all the possible completion items (all the unicode and prefixes)
     else {
+
         const prefixCompletionItems = prefixes.map(prefix => {
             const completion = new CompletionItem(prefix, CompletionItemKind.Keyword)
             completion.range = target
+            // filter by the current word excluding trigger str
+            completion.filterText = str  
             // retrigger completion after prefix, to complete the map string
             completion.command =
                 { command: 'editor.action.triggerSuggest', title: 'completing after prefix' }
@@ -219,6 +205,8 @@ function genCompletions(str: string, target: Range): CompletionItem[] {
                 completion.detail = unicodeChar
                 completion.insertText = unicodeChar
                 completion.range = target
+                // filter by the current word excluding trigger str
+                completion.filterText = str  
                 return completion
             })
 
@@ -234,7 +222,6 @@ function genCompletions(str: string, target: Range): CompletionItem[] {
  * @returns a list of completion item that is valid to the current position
  */
 export function provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
-    console.debug("completion triggered, evaluating current position...")
     const [target, word] = evalPosition(document, position) ?? [null, null]
     if (!target || !word) { return [] }
     console.debug(`trying to provide completion for ${word}`)
@@ -265,16 +252,22 @@ function evalPosition(document: TextDocument, position: Position): [Range, strin
             return [triggerStrStart, triggerStrStart + str.length - 1]
         })
         const lastStrEndIdx = maxBy(([_, end]) => end, triggerStrsRange)
-        // cannot find any trigger string on this line, then eval failed
+        // there is no trigger available, then return.
+        // probably not efficient, a better way is to check at the front.
         if (lastStrEndIdx === null) {return null}
+        const [triggerStart, triggerEnd] = lastStrEndIdx
+        // cannot find the trigger word
+        if (triggerStart === -1) {return null}
 
         // compute the word, slice from the end of the trigger string
-        const word = line.slice(lastStrEndIdx[1])  
+        // do not include the last character of the trigger str.
+        const wordStart = triggerEnd + 1
+        const word = line.slice(wordStart)  
 
         // compute the range, start from the start of trigger string
         // end at the end of the entire word.
-        const start = new Position(position.line, lastStrEndIdx[0])
-        const end = new Position(position.line, lastStrEndIdx[1]).translate(0, word.length)
+        const start = new Position(position.line, triggerStart)
+        const end = new Position(position.line, wordStart).translate(0, word.length)
 
         return [new Range(start, end), word]
     } catch (e) {

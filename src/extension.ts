@@ -1,5 +1,5 @@
 import {ExtensionContext, languages, TextDocument, Position, commands, Uri } from "vscode"
-import {provideCompletion, tabCommit} from "./unicodeMath"
+import {provideCompletion, tabCommit, triggerStrs} from "./unicodeMath"
 
 /**
  * Function to run when the extension is activated 
@@ -17,7 +17,7 @@ export function activate(context: ExtensionContext) {
                 return provideCompletion(document, position)
             }
         },
-        "\\"  // trigger completion on slash
+        ...triggerStrs  // trigger completion on slash
     )
     context.subscriptions.push(completionProvider)
 

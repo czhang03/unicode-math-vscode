@@ -31,8 +31,8 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "unicode-math-input.symbols_html",
-				"title": "Unicode Math Symbols Guide",
+				"command": "unicode-math-input.commit",
+				"title": "commit the string before the cursor to unicode",
 				"category": "Unicode Math"
 			}
 		],
@@ -48,6 +48,7 @@
 			"properties": {
 				"unicodeMath.TriggerStrings": {
 					"type": "array",
+					"items": {"type": "string"},
 					"default": ["\\"],
 					"description": 
 						"This is the strings that triggers the completion and commit, default is '\\'"

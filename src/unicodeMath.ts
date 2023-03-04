@@ -7,16 +7,33 @@ import { symbols } from './symbols'
 
 /**
  * Give the max of an array with respect to some function
+ *
  * @param by compute the values to compare 
  * @param arr the array to compare
  * @returns the max element in arr with respect to `by`, and `null` if the array is empty
- * */
-function maxBy<T, T_comp>(by: (elem:T) => T_comp, arr: Array<T>): T | null {
+ */
+function maxBy<T, TComp>(by: (elem:T) => TComp, arr: Array<T>): T | null {
     if (arr.length === 0) {return null}
     else{
         const [head, tail] = [arr[1], arr.slice(1)]
         return tail.reduce(
             (elem1, elem2) => by(elem1) >= by(elem2) ? elem1 : elem2, head
+        )
+    }
+}
+
+/**
+ * Give the max of an array
+ *
+ * @param arr the array to compare
+ * @returns the max element in arr and `null` if the array is empty
+ */
+function max<T>(arr: Array<T>): T | null {
+    if (arr.length === 0) {return null}
+    else{
+        const [head, tail] = [arr[1], arr.slice(1)]
+        return tail.reduce(
+            (elem1, elem2) => elem1 >= elem2 ? elem1 : elem2, head
         )
     }
 }
@@ -163,7 +180,7 @@ function convertString(str: string): string | null {
  * @param target the range (starting position to end position) of the str including the slash in the beginning
  * @returns a list of completion items from the current string.
  */
-export function genCompletions(str: string, target: Range): CompletionItem[] {
+function genCompletions(str: string, target: Range): CompletionItem[] {
     console.debug(`generating completion for ${str}`)
 
     // special case if the string matches any prefix
@@ -209,15 +226,32 @@ export function genCompletions(str: string, target: Range): CompletionItem[] {
     }
 }
 
+/**
+ * Provide the completion items given the current document and cursor position
+ * 
+ * @param document the current document on the editor
+ * @param position the cursor position
+ * @returns a list of completion item that is valid to the current position
+ */
+export function provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
+    console.debug("completion triggered, evaluating current position...")
+    const [target, word] = evalPosition(document, position) ?? [null, null]
+    if (!target || !word) { return [] }
+    console.debug(`trying to provide completion for ${word}`)
+    return genCompletions(word, target)
+}
+
 
 /**
- * check the word (from the last "\" to current cursor) at the current cursor position
+ * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
+ * IMPORTANT: The return range includes trigger string, and the word do not include the trigger string
  * 
  * @param document the text document that is on the screen
  * @param position position of the cursor
- * @returns the "word" in front of the cursor and its range, starting from (including) "\"
+ * @returns the "word" in front of the cursor, do not include the trigger string;
+ *  the range of the word, including the trigger string.
  */
-export function evalPosition(document: TextDocument, position: Position): [Range, string] | null {
+function evalPosition(document: TextDocument, position: Position): [Range, string] | null {
     // at the start of the line, there is nothing in front.
     if (position.character === 0) { return null }
     try {
@@ -225,16 +259,26 @@ export function evalPosition(document: TextDocument, position: Position): [Range
         const lnRange = new Range(lineStart, position)
         const line = document.getText(lnRange)
 
-        const slash = line.lastIndexOf('\\')
-        if (slash < 0) {console.error(`unexpected error, "\\" is not found before the cursor: \n${line}`); return null}
+        // all the trigger strings with its end index
+        const triggerStrsRange = triggerStrs.map((str) => {
+            const triggerStrStart = line.lastIndexOf(str)
+            return [triggerStrStart, triggerStrStart + str.length - 1]
+        })
+        const lastStrEndIdx = maxBy(([_, end]) => end, triggerStrsRange)
+        // cannot find any trigger string on this line, then eval failed
+        if (lastStrEndIdx === null) {return null}
 
-        const word = line.slice(slash)
-        const start = new Position(position.line, slash)
-        const end = start.translate(undefined, word.length)
+        // compute the word, slice from the end of the trigger string
+        const word = line.slice(lastStrEndIdx[1])  
+
+        // compute the range, start from the start of trigger string
+        // end at the end of the entire word.
+        const start = new Position(position.line, lastStrEndIdx[0])
+        const end = new Position(position.line, lastStrEndIdx[1]).translate(0, word.length)
 
         return [new Range(start, end), word]
-
     } catch (e) {
+        // this part is legacy code, just in case it can really catch some error.
         console.error("unexpected error, while finding word in front of the cursor", e)
         return null
     }

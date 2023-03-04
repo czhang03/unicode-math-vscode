@@ -1,5 +1,5 @@
 import {ExtensionContext, languages, TextDocument, Position, commands, Uri } from "vscode"
-import {evalPosition, genCompletions, tabCommit} from "./unicodeMath"
+import {provideCompletion, tabCommit} from "./unicodeMath"
 
 /**
  * Function to run when the extension is activated 
@@ -14,11 +14,7 @@ export function activate(context: ExtensionContext) {
         '*',
         {
             provideCompletionItems(document: TextDocument, position: Position) {
-                console.debug("completion triggered, evaluating current position...")
-                const [target, word] = evalPosition(document, position) ?? [null, null]
-                if (!target || !word) { return [] }
-                console.log(`trying to provide completion for ${word}`)
-                return genCompletions(word, target)
+                return provideCompletion(document, position)
             }
         },
         "\\"  // trigger completion on slash

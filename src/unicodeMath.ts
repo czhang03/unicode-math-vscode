@@ -12,17 +12,15 @@ import { symbols } from './symbols'
  * @param arr the array to compare
  * @returns the max element in arr with respect to `by`, and `null` if the array is empty
  */
-function maxBy<T, TComp>(by: (elem:T) => TComp, arr: Array<T>): T | null {
-    if (arr.length === 0) {return null}
-    else{
+function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
+    if (arr.length === 0) { return null }
+    else {
         const [head, tail] = [arr[0], arr.slice(1)]
         return tail.reduce(
             (elem1, elem2) => by(elem1) >= by(elem2) ? elem1 : elem2, head
         )
     }
 }
-
-export const triggerStrs = ['.', '\\']
 
 const SPACE_KEY = 'space'
 
@@ -38,6 +36,11 @@ enum StringMapType {
     mathFrak = "mathfrak",
     mathBB = "mathbb",
 }
+
+/**
+ * A string with its range on the document.
+ */
+type StrWithRange = { str: string; range: Range }
 
 
 /**
@@ -82,7 +85,7 @@ const prefixes: string[] = Array.from(prefixToMapType.keys())
  *  The key and value of the map needs to be singleton strings
  */
 function mapTypeToMap(mapType: StringMapType): Map<string, string> {
-    switch(mapType) {
+    switch (mapType) {
         case StringMapType.superscript: return supsMap
         case StringMapType.subscript: return subsMap
         case StringMapType.bold: return boldMap
@@ -106,7 +109,7 @@ function stripPrefix(word: string): [StringMapType, string] | null {
 
     // compute the longest prefix, if there is no valid prefix, return null
     const longestPrefix = maxBy((prefix) => prefix.length, validPrefix)
-    if (longestPrefix === null) {return null}
+    if (longestPrefix === null) { return null }
 
     const wordWithoutPrefix = word.slice(longestPrefix.length)
     const mapType = prefixToMapType.get(longestPrefix)
@@ -125,7 +128,7 @@ function stripPrefix(word: string): [StringMapType, string] | null {
 function mapString(str: string, type: StringMapType): string | null {
     const mappedArr = str.split("")
         .map(char => mapTypeToMap(type).get(char) ?? null)
-    
+
 
     if (mappedArr.filter((elem) => elem === null).length !== 0) {
         // if there is string that cannot be converted
@@ -156,185 +159,190 @@ function convertString(str: string): string | null {
 }
 
 
-/**
- * Generate completion based on the string at cursor
- * 
- * @param trigger the trigger string that triggered current completion, for example "\"
- * @param word the word following the trigger string, but not including
- * @param totalRange the range from the start of the trigger string to then end of the word
- * @returns a list of completion items that are available in the current context
- */
-function genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
-    console.debug(`completion triggered by ${trigger}, current word is ${word}`)
-
-    // special case if the string matches any prefix
-    // then just return how current string will be converted
-    const [mapType, withoutPrefix] = stripPrefix(word) ?? [null, null]
-    if (mapType && withoutPrefix) {
-        console.debug(`matched prefix of ${mapType}`)
-
-        const converted = mapString(withoutPrefix, mapType)
-        // do not generate completion if the string cannot be converted
-        if (converted === null) {return []}
-        else {
-            const completion = new CompletionItem(trigger.concat(word), CompletionItemKind.Text)
-            completion.range = totalRange
-            completion.detail = converted
-            completion.insertText = converted
-
-            return [completion]
-        }
+export class UnicodeMath {
+    constructor(private readonly triggerStrs: string[]) {
     }
 
-    // default case, return all the possible completion items (all the unicode and prefixes)
-    else {
 
-        const prefixCompletionItems = prefixes.map(prefix => {
-            const completion = 
-                new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
-            completion.range = totalRange
-            // retrigger completion after prefix, to complete the map string
-            completion.command =
-                { command: 'editor.action.triggerSuggest', title: 'completing after prefix' }
-            return completion
-        })
+    /**
+     * Generate completion based on the string at cursor
+     * 
+     * @param trigger the trigger string that triggered current completion, for example "\"
+     * @param word the word following the trigger string, but not including
+     * @param totalRange the range from the start of the trigger string to then end of the word
+     * @returns a list of completion items that are available in the current context
+     */
+    private genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
+        console.debug(`completion triggered by ${trigger}, current word is ${word}`)
 
-        const symbolCompletionsItems =
-            Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
-                const completion: CompletionItem = 
-                    new CompletionItem(trigger.concat(inpStr), CompletionItemKind.Constant)
-                completion.detail = unicodeChar
-                completion.insertText = unicodeChar
+        // special case if the string matches any prefix
+        // then just return how current string will be converted
+        const [mapType, withoutPrefix] = stripPrefix(word) ?? [null, null]
+        if (mapType && withoutPrefix) {
+            console.debug(`matched prefix of ${mapType}`)
+
+            const converted = mapString(withoutPrefix, mapType)
+            // do not generate completion if the string cannot be converted
+            if (converted === null) { return [] }
+            else {
+                const completion = new CompletionItem(trigger.concat(word), CompletionItemKind.Text)
                 completion.range = totalRange
+                completion.detail = converted
+                completion.insertText = converted
+
+                return [completion]
+            }
+        }
+
+        // default case, return all the possible completion items (all the unicode and prefixes)
+        else {
+
+            const prefixCompletionItems = prefixes.map(prefix => {
+                const completion =
+                    new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
+                completion.range = totalRange
+                // retrigger completion after prefix, to complete the map string
+                completion.command =
+                    { command: 'editor.action.triggerSuggest', title: 'completing after prefix' }
                 return completion
             })
 
-        return prefixCompletionItems.concat(symbolCompletionsItems)
-    }
-}
+            const symbolCompletionsItems =
+                Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
+                    const completion: CompletionItem =
+                        new CompletionItem(trigger.concat(inpStr), CompletionItemKind.Constant)
+                    completion.detail = unicodeChar
+                    completion.insertText = unicodeChar
+                    completion.range = totalRange
+                    return completion
+                })
 
-/**
- * Provide the completion items given the current document and cursor position
- * 
- * @param document the current document on the editor
- * @param position the cursor position
- * @returns a list of completion item that is valid to the current position
- */
-export function provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
-    const [triggerWithRange, wordWithRange] = evalPosition(document, position) ?? [null, null]
-    if (!triggerWithRange || !wordWithRange) { return [] }
-
-    const triggerRange = triggerWithRange.range
-    const wordRange = wordWithRange.range
-    return genCompletions(triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange))
-}
-
-
-type StrWithRange = {str: string; range: Range}
-
-
-/**
- * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
- * TODO: this function is slightly too long
- * 
- * @param document the text document that is on the screen
- * @param position position of the cursor
- * @returns  the trigger string with its range, and the word with its range
- */
-function evalPosition(document: TextDocument, position: Position): [StrWithRange, StrWithRange] | null {
-    // at the start of the line, there is nothing in front.
-    if (position.character === 0) { return null }
-    try {
-        const lineStart = new Position(position.line, 0)
-        const lnRange = new Range(lineStart, position)
-        const line = document.getText(lnRange)
-
-        // all the trigger strings with its end index
-        const triggerStrsWithStarts: [string, number][] = triggerStrs
-            .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
-            .filter(([_trigger, start]) => start !== -1)
-        const lastStrEndIdx = maxBy(
-            ([trigger, start]) => start + trigger.length, 
-            triggerStrsWithStarts)
-
-        // there is no trigger available, then return.
-        // probably not efficient, a better way is to check at the front.
-        if (lastStrEndIdx === null) {return null}
-        const [trigger, triggerStartIdx] = lastStrEndIdx
-        const triggerEndIdx = triggerStartIdx + trigger.length - 1
-
-        // compute the word, slice from the end of the trigger string
-        // do not include the last character of the trigger str.
-        const wordStartIdx = triggerEndIdx + 1
-        const word = line.slice(wordStartIdx)  
-
-        // compute the range, start from the start of trigger string
-        // end at the end of the entire word.
-        const triggerStart = new Position(position.line, triggerStartIdx)
-        const triggerEnd = new Position(position.line, triggerEndIdx)
-        const wordStart = new Position(position.line, wordStartIdx)
-        const wordEnd = wordStart.translate(0, word.length)
-
-        return [
-            {str: trigger, range: new Range(triggerStart, triggerEnd)},
-            {str: word, range: new Range(wordStart, wordEnd)}
-        ]
-    } catch (e) {
-        // this part is legacy code, just in case it can really catch some error.
-        console.error("unexpected error, while finding word in front of the cursor", e)
-        return null
-    }
-}
-
-
-/**
- * I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
- * 
- * This function do the real editing when user commit using a tab
- * Notice that this do not handle the completion functionality
- * and its mutually exclusive with completion, 
- * i.e. if user get a unicode char using completion, then they don't need to invoke this function
- * 
- * @param key the keypress that triggered this function
- * @returns nothing
- */
-export async function tabCommit(key: string): Promise<void> {
-    if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return }
-
-    const editor: TextEditor = window.activeTextEditor
-    const doKey = async () => {
-        if (key === SPACE_KEY) {
-            await commands.executeCommand('type', { source: 'keyboard', text: ' ' })
-        } else {
-            await commands.executeCommand(key)
+            return prefixCompletionItems.concat(symbolCompletionsItems)
         }
     }
 
-    // TODO: I don't like variables, but there seems to be no way to get the result out.
-    let c = false
-    await editor.edit((editor: TextEditorEdit) => {
-        window.activeTextEditor?.selections.map((v) => {
-            const position = v.start
-            if (window.activeTextEditor) {
-                const [_triggerWithRange, wordWithRange] = 
-                    evalPosition(window.activeTextEditor.document, position) ?? [null, null]
+    /**
+     * Provide the completion items given the current document and cursor position
+     * 
+     * @param document the current document on the editor
+     * @param position the cursor position
+     * @returns a list of completion item that is valid to the current position
+     */
+    public provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
+        const [triggerWithRange, wordWithRange] = this.evalPosition(document, position) ?? [null, null]
+        if (!triggerWithRange || !wordWithRange) { return [] }
 
-                if (wordWithRange) {
-                    console.debug(`trying to commit ${wordWithRange.str}`)
-                    const changed = convertString(wordWithRange.str)
-                    console.debug(changed ? `committing to ${changed}` : `nothing matched`)
-                    if (changed) {
-                        editor.delete(wordWithRange.range)
-                        editor.insert(wordWithRange.range.start, changed)
-                        c = true
+        const triggerRange = triggerWithRange.range
+        const wordRange = wordWithRange.range
+        return this.genCompletions(
+            triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange)
+        )
+    }
+
+    /**
+     * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
+     * TODO: this function is slightly too long
+     * 
+     * @param document the text document that is on the screen
+     * @param position position of the cursor
+     * @returns  the trigger string with its range, and the word with its range
+     */
+    private evalPosition(document: TextDocument, position: Position): [StrWithRange, StrWithRange] | null {
+        // at the start of the line, there is nothing in front.
+        if (position.character === 0) { return null }
+        try {
+            const lineStart = new Position(position.line, 0)
+            const lnRange = new Range(lineStart, position)
+            const line = document.getText(lnRange)
+
+            // all the trigger strings with its end index
+            const triggerStrsWithStarts: [string, number][] = this.triggerStrs
+                .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
+                .filter(([_trigger, start]) => start !== -1)
+            const lastStrEndIdx = maxBy(
+                ([trigger, start]) => start + trigger.length,
+                triggerStrsWithStarts)
+
+            // there is no trigger available, then return.
+            // probably not efficient, a better way is to check at the front.
+            if (lastStrEndIdx === null) { return null }
+            const [trigger, triggerStartIdx] = lastStrEndIdx
+            const triggerEndIdx = triggerStartIdx + trigger.length - 1
+
+            // compute the word, slice from the end of the trigger string
+            // do not include the last character of the trigger str.
+            const wordStartIdx = triggerEndIdx + 1
+            const word = line.slice(wordStartIdx)
+
+            // compute the range, start from the start of trigger string
+            // end at the end of the entire word.
+            const triggerStart = new Position(position.line, triggerStartIdx)
+            const triggerEnd = new Position(position.line, triggerEndIdx)
+            const wordStart = new Position(position.line, wordStartIdx)
+            const wordEnd = wordStart.translate(0, word.length)
+
+            return [
+                { str: trigger, range: new Range(triggerStart, triggerEnd) },
+                { str: word, range: new Range(wordStart, wordEnd) }
+            ]
+        } catch (e) {
+            // this part is legacy code, just in case it can really catch some error.
+            console.error("unexpected error, while finding word in front of the cursor", e)
+            return null
+        }
+    }
+
+
+    /**
+     * I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
+     * 
+     * This function do the real editing when user commit using a tab
+     * Notice that this do not handle the completion functionality
+     * and its mutually exclusive with completion, 
+     * i.e. if user get a unicode char using completion, then they don't need to invoke this function
+     * 
+     * @param key the keypress that triggered this function
+     * @returns nothing
+     */
+    public async commit(key: string): Promise<void> {
+        if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return }
+
+        const editor: TextEditor = window.activeTextEditor
+        const doKey = async () => {
+            if (key === SPACE_KEY) {
+                await commands.executeCommand('type', { source: 'keyboard', text: ' ' })
+            } else {
+                await commands.executeCommand(key)
+            }
+        }
+
+        // TODO: I don't like variables, but there seems to be no way to get the result out.
+        let c = false
+        await editor.edit((editor: TextEditorEdit) => {
+            window.activeTextEditor?.selections.map((v) => {
+                const position = v.start
+                if (window.activeTextEditor) {
+                    const [_triggerWithRange, wordWithRange] =
+                        this.evalPosition(window.activeTextEditor.document, position) ?? [null, null]
+
+                    if (wordWithRange) {
+                        console.debug(`trying to commit ${wordWithRange.str}`)
+                        const changed = convertString(wordWithRange.str)
+                        console.debug(changed ? `committing to ${changed}` : `nothing matched`)
+                        if (changed) {
+                            editor.delete(wordWithRange.range)
+                            editor.insert(wordWithRange.range.start, changed)
+                            c = true
+                        }
                     }
                 }
-            }
+            })
         })
-    })
-    // always propagate the space key, or propagate tab
-    // only if not used to insert a character
-    if (!c || key === SPACE_KEY) { return doKey() }
+        // always propagate the space key, or propagate tab
+        // only if not used to insert a character
+        if (!c || key === SPACE_KEY) { return doKey() }
+    }
+
 }
 
 

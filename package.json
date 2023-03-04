@@ -42,7 +42,18 @@
 				"key": "tab",
 				"when": "editorTextFocus && !inlineSuggestionVisible && !suggestWidgetVisible && !editorTabMovesFocus && !inSnippetMode && !hasSnippetCompletions && !editorTabMovesFocus && !editorReadonly"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Unicode Math Input",
+			"properties": {
+				"unicodeMath.TriggerStrings": {
+					"type": "array",
+					"default": ["\\"],
+					"description": 
+						"This is the strings that triggers the completion and commit, default is '\\'"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

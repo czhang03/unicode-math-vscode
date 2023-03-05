@@ -48,20 +48,25 @@
 			"properties": {
 				"unicodeMath.TriggerStrings": {
 					"type": "array",
-					"items": {"type": "string"},
-					"default": ["\\"],
-					"description": 
-						"This is the strings that triggers the completion and commit, default is '\\'"
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"\\"
+					],
+					"description": "This is the strings that triggers the completion and commit, default is '\\'"
 				}
 			}
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"vscode:prepublish": "npm run esbuild-base -- --minify",
+		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild": "npm run esbuild-base -- --sourcemap",
+		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+		"test-compile": "tsc -p ./",
 		"lint": "eslint \"src/**/*.ts\"",
-		"pretest": "npm run compile",
+		"pretest": "npm run test-compile",
 		"test": "node ./out/tests/runTest.js"
 	},
 	"capabilities": {
@@ -78,6 +83,7 @@
 		"@typescript-eslint/parser": "^5.54.0",
 		"@vscode/test-electron": "^1.6.1",
 		"@vscode/vsce": "^2.18.0",
+		"esbuild": "^0.17.11",
 		"eslint": "^8.35.0",
 		"eslint-config-prettier": "^8.6.0",
 		"eslint-plugin-jsdoc": "^40.0.0",

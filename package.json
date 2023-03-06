@@ -55,6 +55,32 @@
 						"\\"
 					],
 					"description": "This is the strings that triggers the completion and commit, default is '\\'"
+				},
+				"unicodeMath.WarnPrefixFail": {
+					"type": "string",
+					"enum": ["on", "off", "concise"],
+					"enumDescriptions": [
+						"send a warning when some character cannot be converted to the font described by the prefix",
+						"do not send a warning when some character cannot be converted to the font described by the prefix",
+						"send a concise (modal) warning when some character cannot be converted to the font described by the prefix"
+					],
+					"default": [
+						"on"
+					],
+					"description": "Send a warning when there is some character cannot be converted to unicode in the prefix conversion"
+				},
+				"unicodeMath.WarnSymbolFail": {
+					"type": "string",
+					"enum": ["on", "off", "concise"],
+					"enumDescriptions": [
+						"send a warning when some LaTeX command cannot be converted  to unicode",
+						"do not send a warning when some LaTeX command cannot be converted to unicode",
+						"send a concise (modal) warning when some LaTeX command cannot be converted to unicode"
+					],
+					"default": [
+						"off"
+					],
+					"description": "Send a warning when a symbol cannot be converted to unicode"
 				}
 			}
 		}
@@ -89,6 +115,7 @@
 		"eslint-plugin-jsdoc": "^40.0.0",
 		"fast-check": "^3.7.0",
 		"mocha": "^10.2.0",
+		"purify-ts": "^1.3.5",
 		"typescript": "^4.9.5",
 		"ovsx": "^0.8.0"
 	}

@@ -17,10 +17,11 @@ function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
     else {
         const [head, tail] = [arr[0], arr.slice(1)]
         return tail.reduce(
-            (elem1, elem2) => by(elem1) >= by(elem2) ? elem1 : elem2, head
+            (elem, curMax) => by(curMax) >= by(elem) ? curMax : elem, head
         )
     }
 }
+
 
 const SPACE_KEY = 'space'
 
@@ -322,16 +323,18 @@ export class UnicodeMath {
             window.activeTextEditor?.selections.map((v) => {
                 const position = v.start
                 if (window.activeTextEditor) {
-                    const [_triggerWithRange, wordWithRange] =
+                    const [triggerWithRange, wordWithRange] =
                         this.evalPosition(window.activeTextEditor.document, position) ?? [null, null]
 
-                    if (wordWithRange) {
+                    if (wordWithRange && triggerWithRange) {
                         console.debug(`trying to commit ${wordWithRange.str}`)
+                        // the total range of word including trigger
+                        const totalRange = triggerWithRange.range.union(wordWithRange.range)
                         const changed = convertString(wordWithRange.str)
                         console.debug(changed ? `committing to ${changed}` : `nothing matched`)
                         if (changed) {
-                            editor.delete(wordWithRange.range)
-                            editor.insert(wordWithRange.range.start, changed)
+                            editor.delete(totalRange)
+                            editor.insert(totalRange.start, changed)
                             c = true
                         }
                     }

@@ -1,7 +1,11 @@
 on:
-  - push
+  - push:
+    branches:
+      - "**"
   - pull_request:
     types: [opened]
+    branches:
+      - "*"
 
 jobs:
   build:

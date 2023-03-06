@@ -1,7 +1,7 @@
 on:
-  push:
-    branches:
-      - main
+  - push
+  - pull_request:
+    types: [opened]
 
 jobs:
   build:

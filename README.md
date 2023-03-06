@@ -106,7 +106,6 @@ This project is definitely not possible without these projects.
 - [ ] push a warning when commit failed with prefix.
 - [ ] custom symbols.
 - [ ] reverse search prefix or latex command.
-- [ ] automated CI dependency update.
 - [ ] automated CI documentation.
 - [ ] automatically pull character from upstream.
 - [ ] automatically PR to upstream.

@@ -18,7 +18,6 @@ A fast and intuitive way to insert unicode math characters (and even Emoji 😯)
 ## From GitHub Release
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/czhang03/unicode-math-vscode)](https://github.com/czhang03/unicode-math-vscode/releases)
-![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/czhang03/unicode-math-vscode)
 [![CodeQL](https://github.com/czhang03/unicode-math-vscode/actions/workflows/codeql.yml/badge.svg)](https://github.com/czhang03/unicode-math-vscode/actions/workflows/codeql.yml)
 
 

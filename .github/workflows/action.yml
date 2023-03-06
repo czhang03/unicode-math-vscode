@@ -1,8 +1,8 @@
 on:
-  - push:
+  push:
     branches:
       - "**"
-  - pull_request:
+  pull_request:
     types: [opened]
     branches:
       - "*"

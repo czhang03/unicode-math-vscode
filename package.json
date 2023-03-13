@@ -47,6 +47,19 @@
 			"title": "Unicode Math Input",
 			"properties": {
 				"unicodeMath.TriggerStrings": {
+					"title": "Trigger Strings (deprecated)",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"\\"
+					],
+					"description": "This is the strings that triggers the completion and commit, default is '\\'",
+					"markdownDeprecationMessage": "This setting will be deprecated at 1.0, please use `unicodeMathInput.TriggerStrings` instead"
+				},
+				"unicodeMathInput.TriggerStrings": {
+					"title": "Trigger Strings",
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -81,6 +94,116 @@
 						"off"
 					],
 					"description": "Send a warning when a symbol cannot be converted to unicode"
+				},
+				"unicodeMathInput.SubscriptPrefixes": {
+					"title": "Subscript Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"_"
+					],
+					"description": "The prefixes to trigger conversion to unicode subscripts, this string do not include the trigger string."
+				},
+				"unicodeMathInput.SuperscriptPrefixes": {
+					"title": "Superscript Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"^"
+					],
+					"description": "The prefixes to trigger conversion to unicode superscripts, this string do not include the trigger string."
+				},
+				"unicodeMathInput.ItalicPrefixes": {
+					"title": "Italic font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"it", "it:", "mit", "mit:", "mathit", "mathit"
+					],
+					"description": "The prefixes to trigger conversion to italic font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.BoldPrefixes": {
+					"title": "Bold font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"bf", "bf:", "mbf", "mbf:", "mathbf", "mathbf:"
+					],
+					"description": "The prefixes to trigger conversion to bold font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.MathCalPrefixes": {
+					"title": "mathcal font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"cal", "cal:", "mcal", "mcal:", "mathcal", "mathcal:"
+					],
+					"markdownDescription": "The prefixes to trigger conversion to `\\mathcal{}` font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.MathFrakPrefixes": {
+					"title": "mathfrak font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"frak", "frak:", "mfrak", "mfrak:", "mathfrak", "mathfrak:"
+					],
+					"markdownDescription": "The prefixes to trigger conversion to `\\mathfrak{}` font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.MathBBPrefixes": {
+					"title": "mathbb font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"bb", "bb:", "mbb", "mbb:", "mathbb", "mathbb:"
+					],
+					"markdownDescription": "The prefixes to trigger conversion to `\\mathbb{}` font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.mathsfPrefixes": {
+					"title": "mathsf font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"sf", "sf:", "msf", "msf:", "mathsf", "mathsf:"
+					],
+					"markdownDescription": "The prefixes to trigger conversion to `\\mathsf{}` font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.mathttPrefixes": {
+					"title": "mathtt font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"tt", "tt:", "mtt", "mtt:", "mathtt", "mathtt:"
+					],
+					"markdownDescription": "The prefixes to trigger conversion to `\\mathtt{}` font unicode, this string do not include the trigger string."
+				},
+				"unicodeMathInput.mathscrPrefixes": {
+					"title": "mathscr font Prefixes",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"scr", "scr:", "mscr", "mscr:", "mathscr", "mathscr:"
+					],
+					"markdownDescription": "The prefixes to trigger conversion to `\\mathscr{}` font unicode, this string do not include the trigger string."
 				}
 			}
 		}

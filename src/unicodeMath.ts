@@ -83,7 +83,7 @@ function getPrefixSettingID(font: StringFontType): string {
 const prefixToFontType: Map<string, StringFontType> = new Map(
     Object.values(StringFontType)
         .map(type => (workspace.getConfiguration().get(getPrefixSettingID(type)) as string[])
-        .map(prefix => [prefix, type] as [string, StringFontType]))
+            .map(prefix => [prefix, type] as [string, StringFontType]))
         .flat()
 )
 
@@ -177,8 +177,7 @@ function convertString(str: string): string | null {
 
 
 export class UnicodeMath {
-    constructor(private readonly triggerStrs: string[]) {
-    }
+    constructor(private readonly triggerStrs: string[]) { }
 
 
     /**

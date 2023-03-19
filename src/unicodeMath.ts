@@ -2,7 +2,7 @@ import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
     TextEditorEdit, commands, window, CompletionItemKind, workspace
 } from "vscode"
-import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./charMaps"
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
 
 /**
@@ -65,9 +65,9 @@ function getPrefixSettingID(font: StringFontType): string {
         case StringFontType.mathCal:
             return "unicodeMathInput.MathCalPrefixes"
         case StringFontType.mathFrak:
-                return "unicodeMathInput.MathFrakPrefixes"
+            return "unicodeMathInput.MathFrakPrefixes"
         case StringFontType.mathBB:
-                return "unicodeMathInput.MathBBPrefixes"
+            return "unicodeMathInput.MathBBPrefixes"
         case StringFontType.mathsf:
             return "unicodeMathInput.mathsfPrefixes"
         case StringFontType.mathtt:
@@ -107,6 +107,9 @@ function fontToMap(font: StringFontType): Map<string, string> {
         case StringFontType.mathCal: return calMap
         case StringFontType.mathFrak: return frakMap
         case StringFontType.mathBB: return bbMap
+        case StringFontType.mathsf: return sfMap
+        case StringFontType.mathtt: return ttMap
+        case StringFontType.mathscr: return scrMap
     }
 }
 

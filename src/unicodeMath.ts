@@ -191,6 +191,27 @@ export class UnicodeMath {
     private genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
         console.debug(`completion triggered by ${trigger}, current word is ${word}`)
 
+        // compute all the possible completion items (all the unicode and prefixes)
+        const prefixCompletionItems = prefixes.map(prefix => {
+            const completion =
+                new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
+            completion.range = totalRange
+            // retrigger completion after prefix, to complete the map string
+            completion.command =
+                { command: 'editor.action.triggerSuggest', title: 'completing after prefix' }
+            return completion
+        })
+
+        const symbolCompletionsItems =
+            Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
+                const completion: CompletionItem =
+                    new CompletionItem(trigger.concat(inpStr), CompletionItemKind.Constant)
+                completion.detail = unicodeChar
+                completion.insertText = unicodeChar
+                completion.range = totalRange
+                return completion
+            })
+
         // special case if the string matches any prefix
         // then just return how current string will be converted
         const [font, withoutPrefix] = stripPrefix(word) ?? [null, null]
@@ -206,33 +227,12 @@ export class UnicodeMath {
                 completion.detail = converted
                 completion.insertText = converted
 
-                return [completion]
+                return [completion].concat(prefixCompletionItems).concat(symbolCompletionsItems)
             }
         }
 
-        // default case, return all the possible completion items (all the unicode and prefixes)
+        // if it doesn't match any prefix, just return all the completion items. 
         else {
-
-            const prefixCompletionItems = prefixes.map(prefix => {
-                const completion =
-                    new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
-                completion.range = totalRange
-                // retrigger completion after prefix, to complete the map string
-                completion.command =
-                    { command: 'editor.action.triggerSuggest', title: 'completing after prefix' }
-                return completion
-            })
-
-            const symbolCompletionsItems =
-                Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
-                    const completion: CompletionItem =
-                        new CompletionItem(trigger.concat(inpStr), CompletionItemKind.Constant)
-                    completion.detail = unicodeChar
-                    completion.insertText = unicodeChar
-                    completion.range = totalRange
-                    return completion
-                })
-
             return prefixCompletionItems.concat(symbolCompletionsItems)
         }
     }

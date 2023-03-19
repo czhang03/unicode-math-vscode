@@ -28,7 +28,7 @@ const SPACE_KEY = 'space'
 /**
  * Types of string mappings, usually used for math fonts
  */
-enum StringMapType {
+enum StringFontType {
     subscript = "subscript",
     superscript = "superscript",
     bold = "bold",
@@ -49,30 +49,30 @@ type StrWithRange = { str: string; range: Range }
 /**
  * Given a font type, find the configuration ID for its prefixes.
  * 
- * @param mapType The type of the font
+ * @param font The type of the font
  * @returns the configuration ID for the font prefix
  */
-function getPrefixSettingID(mapType: StringMapType): string {
-    switch (mapType) {
-        case StringMapType.subscript:
+function getPrefixSettingID(font: StringFontType): string {
+    switch (font) {
+        case StringFontType.subscript:
             return "unicodeMathInput.SubscriptPrefixes"
-        case StringMapType.superscript:
+        case StringFontType.superscript:
             return "unicodeMathInput.SuperscriptPrefixes"
-        case StringMapType.italic:
+        case StringFontType.italic:
             return "unicodeMathInput.ItalicPrefixes"
-        case StringMapType.bold:
+        case StringFontType.bold:
             return "unicodeMathInput.BoldPrefixes"
-        case StringMapType.mathCal:
+        case StringFontType.mathCal:
             return "unicodeMathInput.MathCalPrefixes"
-        case StringMapType.mathFrak:
+        case StringFontType.mathFrak:
                 return "unicodeMathInput.MathFrakPrefixes"
-        case StringMapType.mathBB:
+        case StringFontType.mathBB:
                 return "unicodeMathInput.MathBBPrefixes"
-        case StringMapType.mathsf:
+        case StringFontType.mathsf:
             return "unicodeMathInput.mathsfPrefixes"
-        case StringMapType.mathtt:
+        case StringFontType.mathtt:
             return "unicodeMathInput.mathttPrefixes"
-        case StringMapType.mathscr:
+        case StringFontType.mathscr:
             return "unicodeMathInput.mathscrPrefixes"
     }
 }
@@ -80,45 +80,45 @@ function getPrefixSettingID(mapType: StringMapType): string {
 /**
  * A map that map the prefix to its corresponding maps
  */
-const prefixToMapType: Map<string, StringMapType> = new Map(
-    Object.values(StringMapType)
+const prefixToFontType: Map<string, StringFontType> = new Map(
+    Object.values(StringFontType)
         .map(type => (workspace.getConfiguration().get(getPrefixSettingID(type)) as string[])
-        .map(prefix => [prefix, type] as [string, StringMapType]))
+        .map(prefix => [prefix, type] as [string, StringFontType]))
         .flat()
 )
 
 // all the possible prefixes
-const prefixes: string[] = Array.from(prefixToMapType.keys())
+const prefixes: string[] = Array.from(prefixToFontType.keys())
 
 
 /**
- * Given a map type, get the map corresponding to that type
+ * Given a font, get the map corresponding to that type
  * 
- * @param mapType the type of the map
+ * @param font the type of the map
  * @returns a map mapping a "char" to its corresponding formatted version 
  *  The key and value of the map needs to be singleton strings
  */
-function mapTypeToMap(mapType: StringMapType): Map<string, string> {
-    switch (mapType) {
-        case StringMapType.superscript: return supsMap
-        case StringMapType.subscript: return subsMap
-        case StringMapType.bold: return boldMap
-        case StringMapType.italic: return italicMap
-        case StringMapType.mathCal: return calMap
-        case StringMapType.mathFrak: return frakMap
-        case StringMapType.mathBB: return bbMap
+function fontToMap(font: StringFontType): Map<string, string> {
+    switch (font) {
+        case StringFontType.superscript: return supsMap
+        case StringFontType.subscript: return subsMap
+        case StringFontType.bold: return boldMap
+        case StringFontType.italic: return italicMap
+        case StringFontType.mathCal: return calMap
+        case StringFontType.mathFrak: return frakMap
+        case StringFontType.mathBB: return bbMap
     }
 }
 
 
 /**
- * Given a word, strip the prefix, and get the map type that prefix correspond to 
+ * Given a word, strip the prefix, and get the font type that prefix correspond to 
  * Notice this will automatically match the longest prefix to avoid ambiguity in the prefix
  * 
  * @param word the pre-converted ascii word that the user typed
- * @returns the map type corresponding to the string, and the string with prefix striped
+ * @returns the font type corresponding of the prefix, and the string with prefix striped
  */
-function stripPrefix(word: string): [StringMapType, string] | null {
+function stripPrefix(word: string): [StringFontType, string] | null {
     const validPrefix = prefixes.filter((prefix) => word.startsWith(prefix))
 
     // compute the longest prefix, if there is no valid prefix, return null
@@ -126,22 +126,22 @@ function stripPrefix(word: string): [StringMapType, string] | null {
     if (longestPrefix === null) { return null }
 
     const wordWithoutPrefix = word.slice(longestPrefix.length)
-    const mapType = prefixToMapType.get(longestPrefix)
+    const font = prefixToFontType.get(longestPrefix)
 
-    return mapType ? [mapType, wordWithoutPrefix] : null
+    return font ? [font, wordWithoutPrefix] : null
 }
 
 /**
- * Given a string and a map type, convert it to its corresponding unicode version.
+ * Given a string and a font, convert it to its corresponding unicode version.
  * This function will ignoring unknown characters
  * 
  * @param str the input string, typed by the user
  * @param type the conversion type (typically math fonts)
  * @returns the unicode version of the converted string
  */
-function mapString(str: string, type: StringMapType): string | null {
+function mapString(str: string, type: StringFontType): string | null {
     const mappedArr = str.split("")
-        .map(char => mapTypeToMap(type).get(char) ?? null)
+        .map(char => fontToMap(type).get(char) ?? null)
 
 
     if (mappedArr.filter((elem) => elem === null).length !== 0) {
@@ -163,13 +163,13 @@ function mapString(str: string, type: StringMapType): string | null {
  */
 function convertString(str: string): string | null {
 
-    const [mapType, withoutPrefix] = stripPrefix(str) ?? [null, null]
+    const [font, withoutPrefix] = stripPrefix(str) ?? [null, null]
 
     // if a prefix cannot be found, then fallback to search in symbols
-    if (mapType === null && withoutPrefix === null) { return symbols.get(str) || null }
+    if (font === null && withoutPrefix === null) { return symbols.get(str) || null }
 
     // if prefix can be found, using prefix
-    else { return mapString(withoutPrefix, mapType) }
+    else { return mapString(withoutPrefix, font) }
 }
 
 
@@ -191,11 +191,11 @@ export class UnicodeMath {
 
         // special case if the string matches any prefix
         // then just return how current string will be converted
-        const [mapType, withoutPrefix] = stripPrefix(word) ?? [null, null]
-        if (mapType && withoutPrefix) {
-            console.debug(`matched prefix of ${mapType}`)
+        const [font, withoutPrefix] = stripPrefix(word) ?? [null, null]
+        if (font && withoutPrefix) {
+            console.debug(`matched prefix of ${font}`)
 
-            const converted = mapString(withoutPrefix, mapType)
+            const converted = mapString(withoutPrefix, font)
             // do not generate completion if the string cannot be converted
             if (converted === null) { return [] }
             else {

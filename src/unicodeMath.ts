@@ -1,4 +1,3 @@
-import { string } from "fast-check"
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
     TextEditorEdit, commands, window, CompletionItemKind, workspace

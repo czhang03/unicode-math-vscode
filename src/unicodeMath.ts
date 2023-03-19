@@ -1,6 +1,7 @@
+import { string } from "fast-check"
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind
+    TextEditorEdit, commands, window, CompletionItemKind, workspace
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./charMaps"
 import { symbols } from './symbols'
@@ -29,13 +30,16 @@ const SPACE_KEY = 'space'
  * Types of string mappings, usually used for math fonts
  */
 enum StringMapType {
-    superscript = "Superscript",
-    subscript = "Subscript",
-    bold = "Bold",
-    italic = "Italic",
+    subscript = "subscript",
+    superscript = "superscript",
+    bold = "bold",
+    italic = "italic",
     mathCal = "mathcal",
     mathFrak = "mathfrak",
     mathBB = "mathbb",
+    mathsf = "mathsf",
+    mathtt = "mathtt",
+    mathscr = "mathscr"
 }
 
 /**
@@ -43,36 +47,46 @@ enum StringMapType {
  */
 type StrWithRange = { str: string; range: Range }
 
+/**
+ * Given a font type, find the configuration ID for its prefixes.
+ * 
+ * @param mapType The type of the font
+ * @returns the configuration ID for the font prefix
+ */
+function getPrefixSettingID(mapType: StringMapType): string {
+    switch (mapType) {
+        case StringMapType.subscript:
+            return "unicodeMathInput.SubscriptPrefixes"
+        case StringMapType.superscript:
+            return "unicodeMathInput.SuperscriptPrefixes"
+        case StringMapType.italic:
+            return "unicodeMathInput.ItalicPrefixes"
+        case StringMapType.bold:
+            return "unicodeMathInput.BoldPrefixes"
+        case StringMapType.mathCal:
+            return "unicodeMathInput.MathCalPrefixes"
+        case StringMapType.mathFrak:
+                return "unicodeMathInput.MathFrakPrefixes"
+        case StringMapType.mathBB:
+                return "unicodeMathInput.MathBBPrefixes"
+        case StringMapType.mathsf:
+            return "unicodeMathInput.mathsfPrefixes"
+        case StringMapType.mathtt:
+            return "unicodeMathInput.mathttPrefixes"
+        case StringMapType.mathscr:
+            return "unicodeMathInput.mathscrPrefixes"
+    }
+}
 
 /**
  * A map that map the prefix to its corresponding maps
  */
-const prefixToMapType: Map<string, StringMapType> = new Map([
-    ["^", StringMapType.superscript],
-    ["_", StringMapType.subscript],
-
-    ["b:", StringMapType.bold],
-    ["bf:", StringMapType.bold],
-    ["mathbf:", StringMapType.bold],
-    ["mathbf", StringMapType.bold],
-
-    ["i:", StringMapType.italic],
-    ["it:", StringMapType.italic],
-    ["mathit:", StringMapType.italic],
-    ["mathit", StringMapType.italic],
-
-    ["cal:", StringMapType.mathCal],
-    ["mathcal:", StringMapType.mathCal],
-    ["mathcal", StringMapType.mathCal],
-
-    ["frak:", StringMapType.mathFrak],
-    ["mathfrak:", StringMapType.mathFrak],
-    ["mathfrak", StringMapType.mathFrak],
-
-    ["Bbb:", StringMapType.mathBB],
-    ["mathbb:", StringMapType.mathBB],
-    ["mathbb", StringMapType.mathBB],
-])
+const prefixToMapType: Map<string, StringMapType> = new Map(
+    Object.values(StringMapType)
+        .map(type => (workspace.getConfiguration().get(getPrefixSettingID(type)) as string[])
+        .map(prefix => [prefix, type] as [string, StringMapType]))
+        .flat()
+)
 
 // all the possible prefixes
 const prefixes: string[] = Array.from(prefixToMapType.keys())

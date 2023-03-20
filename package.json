@@ -102,7 +102,7 @@
 						"type": "string"
 					},
 					"default": [
-						"_"
+						"_", "sub"
 					],
 					"description": "The prefixes to trigger conversion to unicode subscripts, this string do not include the trigger string."
 				},
@@ -113,7 +113,7 @@
 						"type": "string"
 					},
 					"default": [
-						"^"
+						"^", "sup"
 					],
 					"description": "The prefixes to trigger conversion to unicode superscripts, this string do not include the trigger string."
 				},

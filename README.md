@@ -94,6 +94,7 @@ The mapping from latex to unicode is provided by
 - [UnicodeMath](https://github.com/mvoidex/UnicodeMath), which inspired [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
 - [Fast Unicode Math Characters](https://github.com/gatapia/unicode-math-input)
 - [ibus-latex-table](https://github.com/moebiuscurve/ibus-table-others/blob/main/tables/latex.txt)
+- [unicode-math LaTeX Package](https://github.com/wspr/unicode-math/)
 
 The icon is provided by [Material Design Icons](https://pictogrammers.com/library/mdi/icon/math-integral/), 
 released under Apache2.0 license.
@@ -105,7 +106,8 @@ This project is definitely not possible without these projects.
 
 - [ ] push a warning when commit failed with prefix.
 - [ ] custom symbols.
-- [ ] detect custom prefix has overlap
+- [ ] detect custom prefix/symbol has overlap.
+- [ ] detect testing environment and raise error for code that should not be reachable.
 - [ ] reverse search prefix or latex command.
 - [ ] automated CI documentation.
 - [ ] automatically pull character from upstream.

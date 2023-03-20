@@ -213,29 +213,8 @@ export class UnicodeMath {
                 return completion
             })
 
-        // special case if the string matches any prefix
-        // then just return how current string will be converted
-        const [font, withoutPrefix] = stripPrefix(word) ?? [null, null]
-        if (font && withoutPrefix) {
-            console.debug(`matched prefix of ${font}`)
 
-            const converted = mapString(withoutPrefix, font)
-            // do not generate completion if the string cannot be converted
-            if (converted === null) { return prefixCompletionItems.concat(symbolCompletionsItems) }
-            else {
-                const completion = new CompletionItem(trigger.concat(word), CompletionItemKind.Text)
-                completion.range = totalRange
-                completion.detail = `in ${font} font: ${converted}`
-                completion.insertText = converted
-
-                return [completion].concat(prefixCompletionItems).concat(symbolCompletionsItems)
-            }
-        }
-
-        // if it doesn't match any prefix, just return all the completion items. 
-        else {
-            return prefixCompletionItems.concat(symbolCompletionsItems)
-        }
+        return prefixCompletionItems.concat(symbolCompletionsItems)
     }
 
     /**

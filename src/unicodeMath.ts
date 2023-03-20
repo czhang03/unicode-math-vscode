@@ -195,6 +195,7 @@ export class UnicodeMath {
         const prefixCompletionItems = prefixes.map(prefix => {
             const completion =
                 new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
+            completion.detail = prefixToFontType.get(prefix)?.concat(" prefix")
             completion.range = totalRange
             // retrigger completion after prefix, to complete the map string
             completion.command =
@@ -220,11 +221,11 @@ export class UnicodeMath {
 
             const converted = mapString(withoutPrefix, font)
             // do not generate completion if the string cannot be converted
-            if (converted === null) { return [] }
+            if (converted === null) { return prefixCompletionItems.concat(symbolCompletionsItems) }
             else {
                 const completion = new CompletionItem(trigger.concat(word), CompletionItemKind.Text)
                 completion.range = totalRange
-                completion.detail = converted
+                completion.detail = `in ${font} font: ${converted}`
                 completion.insertText = converted
 
                 return [completion].concat(prefixCompletionItems).concat(symbolCompletionsItems)

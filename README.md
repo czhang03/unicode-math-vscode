@@ -105,6 +105,7 @@ This project is definitely not possible without these projects.
 
 - [ ] push a warning when commit failed with prefix.
 - [ ] custom symbols.
+- [ ] detect custom prefix has overlap
 - [ ] reverse search prefix or latex command.
 - [ ] automated CI documentation.
 - [ ] automatically pull character from upstream.

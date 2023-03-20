@@ -9,13 +9,16 @@ import { UnicodeMath } from "./unicodeMath"
 export function activate(context: ExtensionContext) {
 
     // get trigger string from setting
-    const triggerStrs = workspace.getConfiguration().get("unicodeMath.TriggerStrings") as string[]
+    const triggerStrs = 
+        (workspace.getConfiguration().get("unicodeMath.TriggerStrings") as string[])
+        .concat(workspace.getConfiguration().get("unicodeMathInput.TriggerStrings") as string[])
 
     const unicodeMath = new UnicodeMath(triggerStrs)
 
     // register config change 
     workspace.onDidChangeConfiguration(async (changeEvent) => {        
-        if (changeEvent.affectsConfiguration("unicodeMath.TriggerStrings")) {
+        if (changeEvent.affectsConfiguration("unicodeMath.TriggerStrings") || 
+            changeEvent.affectsConfiguration("unicodeMathInput.TriggerStrings")) {
             console.debug("Trigger Strings updated, reloading the extension")
             const selection = 
                 await window.showWarningMessage(

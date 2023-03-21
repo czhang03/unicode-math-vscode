@@ -1,6 +1,6 @@
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString
+    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, DiagnosticCollection
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
@@ -47,33 +47,33 @@ enum Font {
 type StrWithRange = { str: string; range: Range }
 
 /**
- * Given a font type, find the configuration ID for its prefixes.
+ * Given a font type, find the configuration ID for its fontCommands.
  * 
  * @param font The type of the font
  * @returns the configuration ID for the font prefix
  */
-function getPrefixSettingID(font: Font): string {
+function getFontCommandSettingID(font: Font): string {
     switch (font) {
         case Font.subscript:
-            return "unicodeMathInput.SubscriptPrefixes"
+            return "unicodeMathInput.SubscriptFontCommands"
         case Font.superscript:
-            return "unicodeMathInput.SuperscriptPrefixes"
+            return "unicodeMathInput.SuperscriptFontCommands"
         case Font.italic:
-            return "unicodeMathInput.ItalicPrefixes"
+            return "unicodeMathInput.ItalicFontCommands"
         case Font.bold:
-            return "unicodeMathInput.BoldPrefixes"
+            return "unicodeMathInput.BoldFontCommands"
         case Font.mathCal:
-            return "unicodeMathInput.MathCalPrefixes"
+            return "unicodeMathInput.MathCalFontCommands"
         case Font.mathFrak:
-            return "unicodeMathInput.MathFrakPrefixes"
+            return "unicodeMathInput.MathFrakFontCommands"
         case Font.mathBB:
-            return "unicodeMathInput.MathBBPrefixes"
+            return "unicodeMathInput.MathBBFontCommands"
         case Font.mathsf:
-            return "unicodeMathInput.mathsfPrefixes"
+            return "unicodeMathInput.mathsfFontCommands"
         case Font.mathtt:
-            return "unicodeMathInput.mathttPrefixes"
+            return "unicodeMathInput.mathttFontCommands"
         case Font.mathscr:
-            return "unicodeMathInput.mathscrPrefixes"
+            return "unicodeMathInput.mathscrFontCommands"
     }
 }
 
@@ -82,13 +82,13 @@ function getPrefixSettingID(font: Font): string {
  */
 const prefixToFontType: Map<string, Font> = new Map(
     Object.values(Font)
-        .map(type => (workspace.getConfiguration().get(getPrefixSettingID(type)) as string[])
+        .map(type => (workspace.getConfiguration().get(getFontCommandSettingID(type)) as string[])
             .map(prefix => [prefix, type] as [string, Font]))
         .flat()
 )
 
-// all the possible prefixes
-const prefixes: string[] = Array.from(prefixToFontType.keys())
+// all the possible fontCommands
+const fontCommands: string[] = Array.from(prefixToFontType.keys())
 
 
 /**
@@ -200,8 +200,8 @@ export class UnicodeMath {
     private genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
         console.debug(`completion triggered by ${trigger}, current word is ${word}`)
 
-        // compute all the possible completion items (all the unicode and prefixes)
-        const prefixCompletionItems = prefixes.map(prefix => {
+        // compute all the possible completion items (all the unicode and fontCommands)
+        const prefixCompletionItems = fontCommands.map(prefix => {
             const completion =
                 new CompletionItem(`${trigger}${prefix}{}`, CompletionItemKind.Snippet)
             completion.detail = prefixToFontType.get(prefix)?.concat(" prefix")
@@ -349,11 +349,10 @@ export class UnicodeMath {
         if (!c || key === SPACE_KEY) { return doKey() }
     }
 
+    private genDiagnostic(document: TextDocument): DiagnosticCollection {
+        return 
+    }
+
 }
 
 
-export const testing = {
-    prefixes,
-    stripPrefix: getFont,
-    convertString
-}

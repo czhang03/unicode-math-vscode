@@ -1,6 +1,6 @@
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, FoldingContext
+    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
@@ -121,12 +121,12 @@ function fontToMap(font: Font): Map<string, string> {
  * Notice that this function assume there is no ambiguity in the matching. 
  * i.e. the string can only be matched with at most one font
  * 
- * @param word the pre-converted ascii word that the user typed
+ * @param word the pre-converted ascii word that the user typed, does not include the trigger string
  * @returns the font type corresponding of the command, and the string with command stripped
  */
 function getFont(word: string): [Font, string] | null {
 
-    const matchedPrefixes = Array.from(prefixToFontType.entries())
+    const matchedFonts = Array.from(prefixToFontType.entries())
         // matches all the prefix
         .map(([prefix, font]) => [font, word.match(`/${prefix}{(.*)}/g`)] as [Font, RegExpMatchArray | null])
         // filters out the match failure
@@ -134,12 +134,12 @@ function getFont(word: string): [Font, string] | null {
         // return the matched string and the font to convert
         .map(([font, match]) => [font, match[1]] as [Font, string])
 
-    if (matchedPrefixes.length === 0) {return null} 
-    else if (matchedPrefixes.length === 1) {return matchedPrefixes[0]}
+    if (matchedFonts.length === 0) {return null} 
+    else if (matchedFonts.length === 1) {return matchedFonts[0]}
     else {
         console.debug("this should not happen, multiple font matched the current string")
         console.debug(`current string is ${word}`)
-        return matchedPrefixes[0]
+        return matchedFonts[0]
     } 
 }
 

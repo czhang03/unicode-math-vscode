@@ -1,6 +1,6 @@
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, DiagnosticCollection, TextLine, TextDocumentChangeEvent
+    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, DiagnosticCollection, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
@@ -42,8 +42,8 @@ function range(start: number, end: number): number[] {
 }
 
 
-function unique<T>(list: T[]): T[] {
-    return [...new Set(list)]
+function escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
 }
 
 
@@ -159,10 +159,8 @@ function getFont(word: string): [Font, string] | null {
         .map(([font, match]) => [font, match[1]] as [Font, string])
 
     if (matchedFonts.length === 0) {return null} 
-    else if (matchedFonts.length === 1) {return matchedFonts[0]}
     else {
-        console.debug("this should not happen, multiple font matched the current string")
-        console.debug(`current string is ${word}`)
+        // return the longest matches
         return matchedFonts[0]
     } 
 }
@@ -222,19 +220,20 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
 export class UnicodeMath {
 
     // a regex that matches all the potentially convertible strings
-    // the matched element will be the entire regex (match group 0)
+    // the matched element will be the the first match group (match group 1)
     private readonly convertibleRegex: RegExp
 
     constructor(private readonly triggerStrs: string[]) { 
+
         const prefixedRegex = triggerStrs.map(trigger => 
-                Array.from(symbols.keys()).map(fontCommand => `${trigger}${fontCommand}{.*}`))
+                Array.from(fontCommands).map(fontCommand => `${escapeRegExp(trigger)}(${escapeRegExp(fontCommand)}{.*})`))
                 .flat().join("|")
 
         const symbolsRegex = triggerStrs.map(trigger => 
-            Array.from(symbols.keys()).map(symbol => `${trigger}${symbol}(\\s|$)`))
+            Array.from(symbols.keys()).map(symbol => `${escapeRegExp(trigger)}(${escapeRegExp(symbol)})(\\s|$)`))
             .flat().join("|")
         
-        this.convertibleRegex = new RegExp(`${prefixedRegex} | ${symbolsRegex}`)
+        this.convertibleRegex = new RegExp(`${prefixedRegex} | ${symbolsRegex}`, "gm")
     }
 
 
@@ -402,26 +401,26 @@ export class UnicodeMath {
         return lines
             .map(line => [...line.text.matchAll(this.convertibleRegex)]
             .map(match => {
-                const text = match[0]
+                const text = match[1].trim()
                 const unicodeText = convertString(text)
                 const textStart = match.index
-                if(textStart && unicodeText) {
+                if(textStart !== undefined && unicodeText !== null) {
                     const lineNum = line.lineNumber
                     const range = new Range(lineNum, textStart, lineNum, textStart + text.length)
-                    return new Diagnostic(range, `${text} can be converted to ${unicodeText}`)
+                    return new Diagnostic(range, `${text} can be converted to ${unicodeText}`, DiagnosticSeverity.Hint)
                 }
                 else {return null}
             })).flat()
             .filter((res): res is Diagnostic => res !== null)
     }
 
-    public updateChangedLinesDiagnostic(event: TextDocumentChangeEvent, document: TextDocument, origDiagnostics: Diagnostic[]): Diagnostics[] {
+    public updateChangedLinesDiagnostic(event: TextDocumentChangeEvent, document: TextDocument, origDiagnostics: readonly Diagnostic[]): Diagnostic[] {
         const changedLineNums = getChangedLineNums(event)
 
         // TODO: we are assuming the diagnostic is only on a single line, 
         // we should test this during testing
         const previousDiag = origDiagnostics
-            .filter(diag => changedLineNums.has(diag.range.start.line))
+            .filter(diag => ! changedLineNums.has(diag.range.start.line))
 
         const changedLines = [...changedLineNums]
             .map(lineNum => document.lineAt(lineNum))

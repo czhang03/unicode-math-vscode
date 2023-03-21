@@ -2,6 +2,10 @@
 
 A fast and intuitive way to insert unicode math characters (and even Emoji 😯) using LaTeX command in any document!
 
+**Disclaimer**: This extension is still under active development, 
+all configurations/functionalities are subject to radical change until the 1.0 release. 
+However, I will try my best to make configuration backward compatible if possible.
+
 # Install And Info
 
 ## From OpenVSX

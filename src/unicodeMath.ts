@@ -1,6 +1,6 @@
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, DiagnosticCollection
+    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, DiagnosticCollection, TextLine, TextDocumentChangeEvent
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
@@ -20,6 +20,30 @@ function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
             (elem, curMax) => by(curMax) >= by(elem) ? curMax : elem, head
         )
     }
+}
+
+/**
+ * map a function onto a interator
+ * 
+ * @param iterator the input iterator
+ * @param func the function to apply to each element of the iterator
+ * @yields all the elements with func applied to it 
+ */
+function* mapIterator<T,U>(iterator: Iterable<T>, func: (elem: T) => U): Iterable<U> {
+    for (const i of iterator) {
+        yield func(i)
+    }
+}
+
+
+function range(start: number, end: number): number[] {
+    const length = end - start + 1 
+    return [...Array(length).keys()].map(elem => elem + start)
+}
+
+
+function unique<T>(list: T[]): T[] {
+    return [...new Set(list)]
 }
 
 
@@ -126,7 +150,7 @@ function fontToMap(font: Font): Map<string, string> {
  */
 function getFont(word: string): [Font, string] | null {
 
-    const matchedFonts = Array.from(prefixToFontType.entries())
+    const matchedFonts = Array.from(prefixToFontType)
         // matches all the prefix
         .map(([prefix, font]) => [font, word.match(`${prefix}{(.*)}`)] as [Font, RegExpMatchArray | null])
         // filters out the match failure
@@ -185,8 +209,33 @@ function convertString(str: string): string | null {
 }
 
 
+function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
+    return new Set(
+        event.contentChanges
+        .map(change => range(change.range.start.line, change.range.end.line))
+        .flat()
+    )
+        
+}
+
+
 export class UnicodeMath {
-    constructor(private readonly triggerStrs: string[]) { }
+
+    // a regex that matches all the potentially convertible strings
+    // the matched element will be the entire regex (match group 0)
+    private readonly convertibleRegex: RegExp
+
+    constructor(private readonly triggerStrs: string[]) { 
+        const prefixedRegex = triggerStrs.map(trigger => 
+                Array.from(symbols.keys()).map(fontCommand => `${trigger}${fontCommand}{.*}`))
+                .flat().join("|")
+
+        const symbolsRegex = triggerStrs.map(trigger => 
+            Array.from(symbols.keys()).map(symbol => `${trigger}${symbol}(\\s|$)`))
+            .flat().join("|")
+        
+        this.convertibleRegex = new RegExp(`${prefixedRegex} | ${symbolsRegex}`)
+    }
 
 
     /**
@@ -349,8 +398,46 @@ export class UnicodeMath {
         if (!c || key === SPACE_KEY) { return doKey() }
     }
 
-    private genDiagnostic(document: TextDocument): DiagnosticCollection {
-        return 
+    private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
+        return lines
+            .map(line => [...line.text.matchAll(this.convertibleRegex)]
+            .map(match => {
+                const text = match[0]
+                const unicodeText = convertString(text)
+                const textStart = match.index
+                if(textStart && unicodeText) {
+                    const lineNum = line.lineNumber
+                    const range = new Range(lineNum, textStart, lineNum, textStart + text.length)
+                    return new Diagnostic(range, `${text} can be converted to ${unicodeText}`)
+                }
+                else {return null}
+            })).flat()
+            .filter((res): res is Diagnostic => res !== null)
+    }
+
+    public updateChangedLinesDiagnostic(event: TextDocumentChangeEvent, document: TextDocument, origDiagnostics: Diagnostic[]): Diagnostics[] {
+        const changedLineNums = getChangedLineNums(event)
+
+        // TODO: we are assuming the diagnostic is only on a single line, 
+        // we should test this during testing
+        const previousDiag = origDiagnostics
+            .filter(diag => changedLineNums.has(diag.range.start.line))
+
+        const changedLines = [...changedLineNums]
+            .map(lineNum => document.lineAt(lineNum))
+        
+        const newDiag = this.genLinesDiagnostics(changedLines)
+
+        return previousDiag.concat(newDiag)
+
+    }
+
+    public genAllDiagnostic(document: TextDocument): Diagnostic[] {
+        const allLines = [...Array(document.lineCount).keys()]
+            .map(lineNum => document.lineAt(lineNum))
+
+        return this.genLinesDiagnostics(allLines)
+        
     }
 
 }

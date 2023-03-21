@@ -124,7 +124,7 @@
 						"type": "string"
 					},
 					"default": [
-						"it", "it:", "mit", "mit:", "mathit", "mathit"
+						"it", "mit", "mathit"
 					],
 					"description": "The prefixes to trigger conversion to italic font unicode, this string do not include the trigger string."
 				},
@@ -135,7 +135,7 @@
 						"type": "string"
 					},
 					"default": [
-						"bf", "bf:", "mbf", "mbf:", "mathbf", "mathbf:"
+						"bf", "mbf", "mathbf"
 					],
 					"description": "The prefixes to trigger conversion to bold font unicode, this string do not include the trigger string."
 				},
@@ -146,7 +146,7 @@
 						"type": "string"
 					},
 					"default": [
-						"cal", "cal:", "mcal", "mcal:", "mathcal", "mathcal:"
+						"cal", "mcal", "mathcal"
 					],
 					"markdownDescription": "The prefixes to trigger conversion to `\\mathcal{}` font unicode, this string do not include the trigger string."
 				},
@@ -157,7 +157,7 @@
 						"type": "string"
 					},
 					"default": [
-						"frak", "frak:", "mfrak", "mfrak:", "mathfrak", "mathfrak:"
+						"frak", "mfrak", "mathfrak"
 					],
 					"markdownDescription": "The prefixes to trigger conversion to `\\mathfrak{}` font unicode, this string do not include the trigger string."
 				},
@@ -168,7 +168,7 @@
 						"type": "string"
 					},
 					"default": [
-						"bb", "bb:", "mbb", "mbb:", "mathbb", "mathbb:"
+						"bb", "mbb", "mathbb"
 					],
 					"markdownDescription": "The prefixes to trigger conversion to `\\mathbb{}` font unicode, this string do not include the trigger string."
 				},
@@ -179,7 +179,7 @@
 						"type": "string"
 					},
 					"default": [
-						"sf", "sf:", "msf", "msf:", "mathsf", "mathsf:"
+						"sf", "msf", "mathsf"
 					],
 					"markdownDescription": "The prefixes to trigger conversion to `\\mathsf{}` font unicode, this string do not include the trigger string."
 				},
@@ -190,7 +190,7 @@
 						"type": "string"
 					},
 					"default": [
-						"tt", "tt:", "mtt", "mtt:", "mathtt", "mathtt:"
+						"tt", "mtt", "mathtt"
 					],
 					"markdownDescription": "The prefixes to trigger conversion to `\\mathtt{}` font unicode, this string do not include the trigger string."
 				},
@@ -201,7 +201,7 @@
 						"type": "string"
 					},
 					"default": [
-						"scr", "scr:", "mscr", "mscr:", "mathscr", "mathscr:"
+						"scr", "mscr", "mathscr"
 					],
 					"markdownDescription": "The prefixes to trigger conversion to `\\mathscr{}` font unicode, this string do not include the trigger string."
 				}

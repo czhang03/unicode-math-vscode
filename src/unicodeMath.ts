@@ -203,11 +203,11 @@ export class UnicodeMath {
         // compute all the possible completion items (all the unicode and prefixes)
         const prefixCompletionItems = prefixes.map(prefix => {
             const completion =
-                new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
+                new CompletionItem(`${trigger}${prefix}{}`, CompletionItemKind.Snippet)
             completion.detail = prefixToFontType.get(prefix)?.concat(" prefix")
             completion.range = totalRange
             // retrigger completion after prefix, to complete the map string
-            completion.insertText = new SnippetString(`${prefix}{$1}`)
+            completion.insertText = new SnippetString(`${trigger}${prefix}{$1}`)
             return completion
         })
 

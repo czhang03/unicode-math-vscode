@@ -220,7 +220,7 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
 export class UnicodeMath {
 
     // a regex that matches all the potentially convertible strings
-    // the matched element will be the the first match group (match group 1)
+    // the matched element will be the the first match group (match group 1), excluding the trigger string
     private readonly convertibleRegex: RegExp
 
     constructor(private readonly triggerStrs: string[]) { 

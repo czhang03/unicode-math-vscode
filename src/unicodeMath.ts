@@ -128,10 +128,10 @@ function getFont(word: string): [Font, string] | null {
 
     const matchedFonts = Array.from(prefixToFontType.entries())
         // matches all the prefix
-        .map(([prefix, font]) => [font, word.match(`/${prefix}{(.*)}/g`)] as [Font, RegExpMatchArray | null])
+        .map(([prefix, font]) => [font, word.match(`${prefix}{(.*)}`)] as [Font, RegExpMatchArray | null])
         // filters out the match failure
         .filter((res): res is [Font, RegExpMatchArray] => (res[1] !== null))
-        // return the matched string and the font to convert
+        // return the matched string (first match group after the entire string) and the font to convert
         .map(([font, match]) => [font, match[1]] as [Font, string])
 
     if (matchedFonts.length === 0) {return null} 

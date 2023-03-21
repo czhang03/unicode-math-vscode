@@ -35,7 +35,7 @@ Autocompletion will also preview the character that you are currently typing
 **NOTICE**, when [LaTeX Workshop](https://github.com/James-Yu/LaTeX-Workshop) is activated, 
 the `\` trigger seems to be taken by LaTeX Workshop, 
 you can set [custom trigger string](#custom-trigger-string) in the setting. 
-I personally set the trigger strings as `["."]` in my LaTeX project. 
+I personally set the trigger strings as `["\", ";"]` in my LaTeX project. 
 
 
 ## Tab Commit

@@ -106,6 +106,8 @@ function getFontCommandSettingID(font: Font): string {
     }
 }
 
+const doNotWarnCurLineString = "UNICODE-MATH-INPUT: Do not warn current line"
+
 /**
  * A map that map the prefix to its corresponding maps
  */
@@ -418,7 +420,7 @@ export class UnicodeMath {
      */
     private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
         return lines
-            .filter(line => ! line.text.includes("UNICODE-MATH-INPUT: Do not warn this line"))
+            .filter(line => ! line.text.includes(doNotWarnCurLineString))
             .map(line => [...line.text.matchAll(wordRegex)]
             .map(match => {
 

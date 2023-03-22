@@ -47,6 +47,7 @@ module.exports = {
 		'@typescript-eslint/no-explicit-any': "error",
 		'@typescript-eslint/explicit-module-boundary-types': 0,
 		'@typescript-eslint/no-non-null-assertion': "error",
+        "@typescript-eslint/strict-boolean-expressions": "error",
         "@typescript-eslint/no-unused-vars": ["warn", {
             "varsIgnorePattern": "^_",
             "argsIgnorePattern": "^_",

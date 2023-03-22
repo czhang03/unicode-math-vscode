@@ -108,6 +108,8 @@ function getFontCommandSettingID(font: Font): string {
 
 const doNotWarnCurLineString = "UNICODE-MATH-INPUT: Do not warn current line"
 
+export const convertibleDiagnosticsCode = "unicode-math-input.convertible-symbol"
+
 /**
  * A map that map the prefix to its corresponding maps
  */
@@ -412,6 +414,21 @@ export class UnicodeMath {
     }
 
     /**
+     * Generate all the possible conversions for a string including triggers
+     * 
+     * @param stringWithTrigger a string with triggers
+     * @returns a list of possible unicode conversions
+     */
+    public getPossibleConversions(stringWithTrigger: string): string[] {
+        const validTriggers = this.triggerStrs.filter(trigger => stringWithTrigger.startsWith(trigger))
+
+        const contents = validTriggers.map((trigger) => stringWithTrigger.slice(trigger.length))
+        return contents
+            .map((content) => convertString(content))
+            .filter((res): res is string => res !== null)
+    } 
+
+    /**
      * Generate diagnostic for given lines
      * the diagnostic includes all the symbols that can be converted
      * 
@@ -427,18 +444,15 @@ export class UnicodeMath {
                 const word = match[0]
                 const wordStart = match.index
 
-                const validTriggers = this.triggerStrs.filter(trigger => word.startsWith(trigger))
-
-                const contents = validTriggers.map((trigger) => word.slice(trigger.length))
-                const possibleConversions = contents
-                    .map((content) => convertString(content))
-                    .filter((res): res is string => res !== null)
+                const possibleConversions = this.getPossibleConversions(word)
 
                 if (possibleConversions.length === 0 || wordStart === undefined) {return null}
                 else {
                     const lineNum = line.lineNumber
                     const range = new Range(lineNum, wordStart, lineNum, wordStart + word.length)
-                    return new Diagnostic(range, `${word} can be converted to ${unique(possibleConversions).join()}`, DiagnosticSeverity.Information)
+                    const diagnostic = new Diagnostic(range, `${word} can be converted to ${unique(possibleConversions).join()}`, DiagnosticSeverity.Information)
+                    diagnostic.code = convertibleDiagnosticsCode
+                    return diagnostic
                 }
             })).flat()
             .filter((res): res is Diagnostic => res !== null)

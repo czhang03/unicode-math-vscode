@@ -50,7 +50,7 @@ function unique<T>(arr: T[]): T[] {
  * We currently allow `|()[]:!#$%&*+./<=>?@^-~\;` and all the word character in the definition of symbols and font command
  * Finally we add `{` and `}` because it is used in font commands
  */
-const wordRegex = new RegExp(/(\w|\||\(|\)|\[|\]|:|!|#|\$|%|&|\*|\+|\.|\/|<|=|>|\?|@|\^|-|~|\\|;|{|})+/, "gm")
+const wordRegex = new RegExp(/(\w|\||\(|\)|\[|\]|:|!|#|\$|%|&|\*|\+|\.|\/|<|=|>|\?|@|\^|-|~|\\|;|{|})+/, "gmu")
 
 const SPACE_KEY = 'space'
 

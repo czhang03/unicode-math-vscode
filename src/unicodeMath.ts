@@ -1,6 +1,6 @@
 import {
     TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, DiagnosticCollection, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
+    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
@@ -409,6 +409,13 @@ export class UnicodeMath {
         if (!c || key === SPACE_KEY) { return doKey() }
     }
 
+    /**
+     * Generate diagnostic for given lines
+     * the diagnostic includes all the symbols that can be converted
+     * 
+     * @param lines the TextLines that needs to generate diagnostics
+     * @returns a list of diagnostics 
+     */
     private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
         return lines
             .map(line => [...line.text.matchAll(wordRegex)]
@@ -434,6 +441,14 @@ export class UnicodeMath {
             .filter((res): res is Diagnostic => res !== null)
     }
 
+    /**
+     * Given a change in the text, update the list of diagnostics for these changed lines
+     * 
+     * @param event the document change event
+     * @param document the text document
+     * @param origDiagnostics the original diagnostics of the file
+     * @returns a new list of diagnostics that refreshes the lines that have been changed
+     */
     public updateChangedLinesDiagnostic(event: TextDocumentChangeEvent, document: TextDocument, origDiagnostics: readonly Diagnostic[]): Diagnostic[] {
         const changedLineNums = getChangedLineNums(event)
 
@@ -451,6 +466,12 @@ export class UnicodeMath {
 
     }
 
+    /**
+     * Generate diagnostics for the entire document
+     * 
+     * @param document the entire text document currently being edited
+     * @returns a list of diagnostic data
+     */
     public genAllDiagnostic(document: TextDocument): Diagnostic[] {
         const allLines = [...Array(document.lineCount).keys()]
             .map(lineNum => document.lineAt(lineNum))

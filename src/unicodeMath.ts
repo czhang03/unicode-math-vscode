@@ -418,6 +418,7 @@ export class UnicodeMath {
      */
     private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
         return lines
+            .filter(line => ! line.text.includes("UNICODE-MATH-INPUT: Do not warn this line"))
             .map(line => [...line.text.matchAll(wordRegex)]
             .map(match => {
 

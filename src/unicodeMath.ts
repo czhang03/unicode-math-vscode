@@ -35,15 +35,16 @@ function* mapIterator<T,U>(iterator: Iterable<T>, func: (elem: T) => U): Iterabl
     }
 }
 
-
+/**
+ * get the range from start to end
+ * 
+ * @param start the starting number, inclusive
+ * @param end the ending number, noninclusive
+ * @returns a list that contains all the numbers in between (do not include the end)
+ */
 function range(start: number, end: number): number[] {
     const length = end - start + 1 
     return [...Array(length).keys()].map(elem => elem + start)
-}
-
-
-function escapeRegExp(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
 }
 
 
@@ -200,13 +201,18 @@ function convertString(str: string): string | null {
     const [font, content] = getFont(str) ?? [null, null]
 
     // if a prefix cannot be found, then fallback to search in symbols
-    if (font === null && content === null) { return symbols.get(str) || null }
+    if (font === null && content === null) { return symbols.get(str) ?? null }
 
     // if prefix can be found, using prefix
     else { return toFont(content, font) }
 }
 
-
+/**
+ * Get all the lines that was changed from the text change event
+ * 
+ * @param event the text on document changed
+ * @returns a set of changed line numbers.
+ */
 function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
     return new Set(
         event.contentChanges
@@ -219,22 +225,7 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
 
 export class UnicodeMath {
 
-    // a regex that matches all the potentially convertible strings
-    // the matched element will be the the first match group (match group 1), excluding the trigger string
-    private readonly convertibleRegex: RegExp
-
-    constructor(private readonly triggerStrs: string[]) { 
-
-        const prefixedRegex = triggerStrs.map(trigger => 
-                Array.from(fontCommands).map(fontCommand => `${escapeRegExp(trigger)}(${escapeRegExp(fontCommand)}{.*})`))
-                .flat().join("|")
-
-        const symbolsRegex = triggerStrs.map(trigger => 
-            Array.from(symbols.keys()).map(symbol => `${escapeRegExp(trigger)}(${escapeRegExp(symbol)})(\\s|$)`))
-            .flat().join("|")
-        
-        this.convertibleRegex = new RegExp(`${prefixedRegex} | ${symbolsRegex}`, "gm")
-    }
+    constructor(private readonly triggerStrs: string[]) { }
 
 
     /**
@@ -282,7 +273,7 @@ export class UnicodeMath {
      */
     public provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
         const [triggerWithRange, wordWithRange] = this.evalPosition(document, position) ?? [null, null]
-        if (!triggerWithRange || !wordWithRange) { return [] }
+        if (triggerWithRange === null || wordWithRange === null) { return [] }
 
         const triggerRange = triggerWithRange.range
         const wordRange = wordWithRange.range
@@ -357,7 +348,7 @@ export class UnicodeMath {
      * @returns nothing
      */
     public async commit(key: string): Promise<void> {
-        if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return }
+        if (key === "" || window.activeTextEditor === undefined || window.activeTextEditor.selection.isEmpty) { return }
 
         const editor: TextEditor = window.activeTextEditor
         const doKey = async () => {
@@ -373,17 +364,17 @@ export class UnicodeMath {
         await editor.edit((editor: TextEditorEdit) => {
             window.activeTextEditor?.selections.map((v) => {
                 const position = v.start
-                if (window.activeTextEditor) {
+                if (window.activeTextEditor !== undefined) {
                     const [triggerWithRange, wordWithRange] =
                         this.evalPosition(window.activeTextEditor.document, position) ?? [null, null]
 
-                    if (wordWithRange && triggerWithRange) {
+                    if (wordWithRange !== null && triggerWithRange !== null) {
                         console.debug(`trying to commit ${wordWithRange.str}`)
                         // the total range of word including trigger
                         const totalRange = triggerWithRange.range.union(wordWithRange.range)
                         const changed = convertString(wordWithRange.str)
-                        console.debug(changed ? `committing to ${changed}` : `nothing matched`)
-                        if (changed) {
+                        console.debug(changed !== null && changed !== "" ? `committing to ${changed}` : `nothing matched`)
+                        if (changed !== null && changed !== "") {
                             editor.delete(totalRange)
                             editor.insert(totalRange.start, changed)
                             c = true

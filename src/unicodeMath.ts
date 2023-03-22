@@ -23,19 +23,6 @@ function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
 }
 
 /**
- * map a function onto a interator
- * 
- * @param iterator the input iterator
- * @param func the function to apply to each element of the iterator
- * @yields all the elements with func applied to it 
- */
-function* mapIterator<T,U>(iterator: Iterable<T>, func: (elem: T) => U): Iterable<U> {
-    for (const i of iterator) {
-        yield func(i)
-    }
-}
-
-/**
  * get the range from start to end
  * 
  * @param start the starting number, inclusive
@@ -45,6 +32,17 @@ function* mapIterator<T,U>(iterator: Iterable<T>, func: (elem: T) => U): Iterabl
 function range(start: number, end: number): number[] {
     const length = end - start + 1 
     return [...Array(length).keys()].map(elem => elem + start)
+}
+
+/**
+ * Return the unique elements of a array
+ * This function do not guarantee the order of the elements
+ * 
+ * @param arr the input array
+ * @returns a array that contains all the unique elements of the input array 
+ */
+function unique<T>(arr: T[]): T[] {
+    return [...new Set(arr)]
 }
 
 /**
@@ -120,6 +118,9 @@ const prefixToFontType: Map<string, Font> = new Map(
 
 // all the possible fontCommands
 const fontCommands: string[] = Array.from(prefixToFontType.keys())
+
+// all the text of symbols
+const symbolTexts: Set<string> = new Set(symbols.keys())
 
 
 /**
@@ -263,7 +264,13 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
 
 export class UnicodeMath {
 
-    constructor(private readonly triggerStrs: string[]) { }
+    private readonly tiggerToSymbolMap: Map<string, Set<string>>
+
+    constructor(private readonly triggerStrs: string[]) {
+        this.tiggerToSymbolMap = new Map(
+            triggerStrs.map((trigger) => [trigger, new Set([...symbolTexts].map(text => `${trigger}${text}`))])
+        )
+    }
 
 
     /**
@@ -404,17 +411,25 @@ export class UnicodeMath {
 
     private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
         return lines
-            .map(line => [...line.text.matchAll(this.convertibleRegex)]
+            .map(line => [...line.text.matchAll(wordRegex)]
             .map(match => {
-                const text = match[1].trim()
-                const unicodeText = convertString(text)
-                const textStart = match.index
-                if(textStart !== undefined && unicodeText !== null) {
+
+                const word = match[0]
+                const wordStart = match.index
+
+                const validTriggers = this.triggerStrs.filter(trigger => word.startsWith(trigger))
+
+                const contents = validTriggers.map((trigger) => word.slice(trigger.length))
+                const possibleConversions = contents
+                    .map((content) => convertString(content))
+                    .filter((res): res is string => res !== null)
+
+                if (possibleConversions.length === 0 || wordStart === undefined) {return null}
+                else {
                     const lineNum = line.lineNumber
-                    const range = new Range(lineNum, textStart, lineNum, textStart + text.length)
-                    return new Diagnostic(range, `${text} can be converted to ${unicodeText}`, DiagnosticSeverity.Hint)
+                    const range = new Range(lineNum, wordStart, lineNum, wordStart + word.length)
+                    return new Diagnostic(range, `${word} can be converted to ${unique(possibleConversions).join()}`, DiagnosticSeverity.Information)
                 }
-                else {return null}
             })).flat()
             .filter((res): res is Diagnostic => res !== null)
     }

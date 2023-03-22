@@ -53,7 +53,7 @@ export function activate(context: ExtensionContext) {
     const convertibleDiagnostics = languages.createDiagnosticCollection("unicode-math-input.convertible")
     context.subscriptions.push(convertibleDiagnostics)
     // generate all the diagnostics
-    if (window.activeTextEditor) {
+    if (window.activeTextEditor !== undefined) {
         convertibleDiagnostics.set(
             window.activeTextEditor.document.uri,
             unicodeMath.genAllDiagnostic(window.activeTextEditor.document)
@@ -63,7 +63,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(
         window.onDidChangeActiveTextEditor(editor => {
             // if current editor is live, and don't have any diagnostic data
-            if (editor && convertibleDiagnostics.get(editor.document.uri) === undefined) {
+            if (editor !== undefined && convertibleDiagnostics.get(editor.document.uri) === undefined) {
                 convertibleDiagnostics.set(
                     editor.document.uri,
                     unicodeMath.genAllDiagnostic(editor.document)

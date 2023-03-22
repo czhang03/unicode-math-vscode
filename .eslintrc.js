@@ -48,7 +48,12 @@ module.exports = {
 		'@typescript-eslint/no-explicit-any': "error",
 		'@typescript-eslint/explicit-module-boundary-types': 0,
 		'@typescript-eslint/no-non-null-assertion': "error",
-        "@typescript-eslint/strict-boolean-expressions": "error",
+        "@typescript-eslint/strict-boolean-expressions": ["error",{
+            allowString: false,
+            allowNumber: false,
+            allowNullableObject: false,
+            allowNullableEnum: false,
+        }],
         "@typescript-eslint/no-unused-vars": ["warn", {
             "varsIgnorePattern": "^_",
             "argsIgnorePattern": "^_",
@@ -61,5 +66,8 @@ module.exports = {
         "no-redeclare": "warn",
         "no-throw-literal": "warn",
         "no-unused-expressions": "warn",
+        "jsdoc/require-param-type": 0,
+        "jsdoc/require-property-type": 0,
+        "jsdoc/require-returns-type": 0,
     }
 }

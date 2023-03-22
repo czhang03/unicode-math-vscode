@@ -47,6 +47,12 @@ function range(start: number, end: number): number[] {
     return [...Array(length).keys()].map(elem => elem + start)
 }
 
+/**
+ * The regular expression to match a word.
+ * We currently allow `|()[]:!#$%&*+./<=>?@^-~\;` and all the word character in the definition of symbols and font command
+ * Finally we add `{` and `}` because it is used in font commands
+ */
+const wordRegex = new RegExp(/(\w|\||\(|\)|\[|\]|:|!|#|\$|%|&|\*|\+|\.|\/|<|=|>|\?|@|\^|-|~|\\|;|{|})+/, "gm")
 
 const SPACE_KEY = 'space'
 
@@ -223,6 +229,38 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
 }
 
 
+/**
+ * A helper function that pick the trigger and package the information nicely into StrWithRange
+ * given all the possible splits of trigger and string,
+ * pick the "last trigger" (defined by the end of the trigger string)
+ * and package the result nicely into StrWithRange.
+ * 
+ * @param possibleTriggers each trigger with its rest of the string, and the range of the entire string with trigger
+ * @returns range and str of the trigger and the rest of the string
+ */
+function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange, StrWithRange] | null{
+    const pickedTrigger = maxBy(([trigger, _str, range]) => range.start.character + trigger.length, possibleTriggers)
+
+    if (pickedTrigger === null) {return null}  // the input `possibleTriggers` is empty
+    else {
+        const [trigger, str, range] = pickedTrigger
+
+        const triggerEnd = range.start.translate(0, trigger.length)
+        const triggerRange = new Range(range.start, triggerEnd)
+
+        const strStart = triggerEnd.translate(0, 1)
+        const strRange = new Range(strStart, range.end)
+
+        return [
+            {str: trigger, range: triggerRange},
+            {str: str, range: strRange}
+        ]
+    }
+}
+
+
+
+
 export class UnicodeMath {
 
     constructor(private readonly triggerStrs: string[]) { }
@@ -281,58 +319,34 @@ export class UnicodeMath {
             triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange)
         )
     }
-
+    
     /**
      * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
      * TODO: this function is slightly too long
      * 
      * @param document the text document that is on the screen
-     * @param position position of the cursor
+     * @param cursorPosition position of the cursor
      * @returns  the trigger string with its range, and the word with its range
      */
-    private evalPosition(document: TextDocument, position: Position): [StrWithRange, StrWithRange] | null {
+    private evalPosition(document: TextDocument, cursorPosition: Position): [StrWithRange, StrWithRange] | null {
         // at the start of the line, there is nothing in front.
-        if (position.character === 0) { return null }
-        try {
-            const lineStart = new Position(position.line, 0)
-            const lnRange = new Range(lineStart, position)
-            const line = document.getText(lnRange)
+        if (cursorPosition.character === 0) { return null }
+        const lineStart = new Position(cursorPosition.line, 0)
+        const lnRange = new Range(lineStart, cursorPosition)
+        const line = document.getText(lnRange)
 
-            // all the trigger strings with its end index
-            const triggerStrsWithStarts: [string, number][] = this.triggerStrs
-                .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
-                .filter(([_trigger, start]) => start !== -1)
-            const lastStrEndIdx = maxBy(
-                ([trigger, start]) => start + trigger.length,
-                triggerStrsWithStarts)
-
-            // there is no trigger available, then return.
-            // probably not efficient, a better way is to check at the front.
-            if (lastStrEndIdx === null) { return null }
-            const [trigger, triggerStartIdx] = lastStrEndIdx
-            const triggerEndIdx = triggerStartIdx + trigger.length - 1
-
-            // compute the word, slice from the end of the trigger string
-            // do not include the last character of the trigger str.
-            const wordStartIdx = triggerEndIdx + 1
-            const word = line.slice(wordStartIdx)
-
-            // compute the range, start from the start of trigger string
-            // end at the end of the entire word.
-            const triggerStart = new Position(position.line, triggerStartIdx)
-            const triggerEnd = new Position(position.line, triggerEndIdx)
-            const wordStart = new Position(position.line, wordStartIdx)
-            const wordEnd = wordStart.translate(0, word.length)
-
-            return [
-                { str: trigger, range: new Range(triggerStart, triggerEnd) },
-                { str: word, range: new Range(wordStart, wordEnd) }
-            ]
-        } catch (e) {
-            // this part is legacy code, just in case it can really catch some error.
-            console.error("unexpected error, while finding word in front of the cursor", e)
-            return null
-        }
+        // all the trigger strings with its end index
+        const triggerStrsWithRange = this.triggerStrs
+            .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
+            .filter(([_trigger, start]) => start !== -1)
+            .map(([trigger, triggerStart]) => {
+                const triggerEnd = triggerStart + trigger.length
+                const content = line.slice(triggerEnd + 1)
+                const totalRange = new Range(new Position(cursorPosition.line, triggerStart), cursorPosition)
+                return [trigger, content, totalRange] as [string, string, Range]
+            })
+        
+        return pickTrigger(triggerStrsWithRange)
     }
 
 

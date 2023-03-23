@@ -250,7 +250,7 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
     else {
         const [trigger, str, range] = pickedTrigger
 
-        const triggerEnd = range.start.translate(0, trigger.length)
+        const triggerEnd = range.start.translate(0, trigger.length - 1)
         const triggerRange = new Range(range.start, triggerEnd)
 
         const strStart = triggerEnd.translate(0, 1)
@@ -351,7 +351,7 @@ export class UnicodeMath {
             .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
             .filter(([_trigger, start]) => start !== -1)
             .map(([trigger, triggerStart]) => {
-                const triggerEnd = triggerStart + trigger.length
+                const triggerEnd = triggerStart + trigger.length - 1
                 const content = line.slice(triggerEnd + 1)
                 const totalRange = new Range(new Position(cursorPosition.line, triggerStart), cursorPosition)
                 return [trigger, content, totalRange] as [string, string, Range]
@@ -373,9 +373,10 @@ export class UnicodeMath {
      * @returns nothing
      */
     public async commit(key: string): Promise<void> {
-        if (key === "" || window.activeTextEditor === undefined || window.activeTextEditor.selection.isEmpty) { return }
+        // if the editor is unavailable stop the process
+        const editor = window.activeTextEditor
+        if (editor === undefined) { return }
 
-        const editor: TextEditor = window.activeTextEditor
         const doKey = async () => {
             if (key === SPACE_KEY) {
                 await commands.executeCommand('type', { source: 'keyboard', text: ' ' })

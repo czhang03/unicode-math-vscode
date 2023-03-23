@@ -1,5 +1,9 @@
-import { window, ExtensionContext, languages, TextDocument, Position, commands, Uri, workspace } from "vscode"
-import { UnicodeMath } from "./unicodeMath"
+import { window, ExtensionContext, languages, TextDocument, Position, commands, Uri, workspace, CodeActionKind, CodeActionProvider, Range, Selection, CodeActionContext, CancellationToken, CodeAction, WorkspaceEdit } from "vscode"
+import { UnicodeMath, convertibleDiagnosticsCode} from "./unicodeMath"
+
+const triggerStrs = 
+        (workspace.getConfiguration().get("unicodeMath.TriggerStrings") as string[])
+        .concat(workspace.getConfiguration().get("unicodeMathInput.TriggerStrings") as string[])
 
 /**
  * Function to run when the extension is activated 
@@ -7,11 +11,6 @@ import { UnicodeMath } from "./unicodeMath"
  * @param context the editor context
  */
 export function activate(context: ExtensionContext) {
-
-    // get trigger string from setting
-    const triggerStrs = 
-        (workspace.getConfiguration().get("unicodeMath.TriggerStrings") as string[])
-        .concat(workspace.getConfiguration().get("unicodeMathInput.TriggerStrings") as string[])
 
     // create class with trigger string
     const unicodeMath = new UnicodeMath(triggerStrs)
@@ -93,8 +92,38 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(
         workspace.onDidCloseTextDocument(doc => convertibleDiagnostics.delete(doc.uri))
     )
-
-
+    
+    // register code action 
+    context.subscriptions.push(
+		languages.registerCodeActionsProvider('*', new UnicodeConvertAction(), {
+			providedCodeActionKinds: [ CodeActionKind.QuickFix ]
+		})
+	)
 
     console.debug("extension activated")
+}
+
+export class UnicodeConvertAction implements CodeActionProvider {
+
+    private unicodeMath = new UnicodeMath(triggerStrs)
+
+	provideCodeActions(document: TextDocument, _range: Range | Selection, context: CodeActionContext, _token: CancellationToken): CodeAction[] {
+
+		// for each diagnostic entry that has the matching `code`, create a code action command
+		return context.diagnostics
+			.filter(diagnostic => diagnostic.code === convertibleDiagnosticsCode)
+			.map(diagnostic => {
+                const text = document.getText(diagnostic.range)
+                const possibleConversions = this.unicodeMath.getPossibleConversions(text)
+                return possibleConversions.map((unicode) => {
+
+                    const action = new CodeAction(`convert to ${unicode}`, CodeActionKind.QuickFix)
+                    action.diagnostics = [diagnostic]
+                    action.isPreferred = true                    
+                    action.edit = new WorkspaceEdit()
+                    action.edit.replace(document.uri, diagnostic.range, unicode)
+                    return action
+                })
+            }).flat()
+	}
 }

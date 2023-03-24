@@ -4,7 +4,7 @@ import {
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
-import {Font, StrWithRange, } from "./helpers/types"
+import { Font, StrWithRange } from "./helpers/types"
 import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const"
 import { maxBy, range, unique } from "./helpers/functions"
 

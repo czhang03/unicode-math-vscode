@@ -63,11 +63,18 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(
         window.onDidChangeActiveTextEditor(editor => {
             // if current editor is live, and don't have any diagnostic data
-            if (editor !== undefined && convertibleDiagnostics.get(editor.document.uri) === undefined) {
-                convertibleDiagnostics.set(
-                    editor.document.uri,
-                    unicodeMath.genAllDiagnostic(editor.document)
-                )
+            if (editor !== undefined) {
+                const diagnostics = convertibleDiagnostics.get(editor.document.uri)
+
+                // vscode sometimes will set the diagnostics of a unopened document as []
+                // which is weird, since it should be `undefined`
+                // anyway, this is a hack to take care of that case. 
+                if(diagnostics === undefined || diagnostics.length === 0) {
+                    convertibleDiagnostics.set(
+                        editor.document.uri,
+                        unicodeMath.genAllDiagnostic(editor.document)
+                    )
+                }
             }
         })
     )

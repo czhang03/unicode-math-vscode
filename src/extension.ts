@@ -1,5 +1,6 @@
-import { window, ExtensionContext, languages, TextDocument, Position, commands, Uri, workspace, CodeActionKind, CodeActionProvider, Range, Selection, CodeActionContext, CancellationToken, CodeAction, WorkspaceEdit } from "vscode"
-import { UnicodeMath, convertibleDiagnosticsCode} from "./unicodeMath"
+import { window, ExtensionContext, languages, TextDocument, Position, commands, workspace, CodeActionKind, CodeActionProvider, Range, Selection, CodeActionContext, CancellationToken, CodeAction, WorkspaceEdit } from "vscode"
+import { convertibleDiagnosticsCode } from "./helpers/const"
+import { UnicodeMath} from "./unicodeMath"
 
 const triggerStrs = 
         (workspace.getConfiguration().get("unicodeMath.TriggerStrings") as string[])
@@ -113,8 +114,11 @@ export class UnicodeConvertAction implements CodeActionProvider {
 		return context.diagnostics
 			.filter(diagnostic => diagnostic.code === convertibleDiagnosticsCode)
 			.map(diagnostic => {
+                // generate the possible conversion corresponding to the diagnostic
                 const text = document.getText(diagnostic.range)
                 const possibleConversions = this.unicodeMath.getPossibleConversions(text)
+
+                // generate a code action for each diagnostic
                 return possibleConversions.map((unicode) => {
 
                     const action = new CodeAction(`convert to ${unicode}`, CodeActionKind.QuickFix)
@@ -122,6 +126,7 @@ export class UnicodeConvertAction implements CodeActionProvider {
                     action.isPreferred = true                    
                     action.edit = new WorkspaceEdit()
                     action.edit.replace(document.uri, diagnostic.range, unicode)
+
                     return action
                 })
             }).flat()

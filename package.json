@@ -204,6 +204,15 @@
 						"scr", "mscr", "mathscr"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathscr{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.disableInLanguages": {
+					"title": "Disable In The Following Languages",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [ ],
+					"markdownDescription": "Unicode Math Input will not be activated when the [language IDs](https://code.visualstudio.com/docs/languages/identifiers) of current file is in this list"
 				}
 			}
 		}

@@ -26,11 +26,11 @@ export function getFontCommandSettingID(font: Font): string {
             return "unicodeMathInput.ItalicFontCommands"
         case Font.bold:
             return "unicodeMathInput.BoldFontCommands"
-        case Font.mathCal:
+        case Font.mathcal:
             return "unicodeMathInput.MathCalFontCommands"
-        case Font.mathFrak:
+        case Font.mathfrak:
             return "unicodeMathInput.MathFrakFontCommands"
-        case Font.mathBB:
+        case Font.mathbb:
             return "unicodeMathInput.MathBBFontCommands"
         case Font.mathsf:
             return "unicodeMathInput.mathsfFontCommands"

@@ -22,9 +22,6 @@ const prefixToFontType: Map<string, Font> = new Map(
 // all the possible fontCommands
 const fontCommands: string[] = Array.from(prefixToFontType.keys())
 
-// all the text of symbols
-const symbolTexts: Set<string> = new Set(symbols.keys())
-
 /**
  * Given a font, get the map corresponding to that type
  * 
@@ -38,9 +35,9 @@ function fontToMap(font: Font): Map<string, string> {
         case Font.subscript: return subsMap
         case Font.bold: return boldMap
         case Font.italic: return italicMap
-        case Font.mathCal: return calMap
-        case Font.mathFrak: return frakMap
-        case Font.mathBB: return bbMap
+        case Font.mathcal: return calMap
+        case Font.mathfrak: return frakMap
+        case Font.mathbb: return bbMap
         case Font.mathsf: return sfMap
         case Font.mathtt: return ttMap
         case Font.mathscr: return scrMap
@@ -166,13 +163,7 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
 
 export class UnicodeMath {
 
-    private readonly tiggerToSymbolMap: Map<string, Set<string>>
-
-    constructor(private readonly triggerStrs: string[]) {
-        this.tiggerToSymbolMap = new Map(
-            triggerStrs.map((trigger) => [trigger, new Set([...symbolTexts].map(text => `${trigger}${text}`))])
-        )
-    }
+    constructor(private readonly triggerStrs: string[]) {}
 
 
     /**
@@ -397,5 +388,3 @@ export class UnicodeMath {
     }
 
 }
-
-

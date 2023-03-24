@@ -8,9 +8,9 @@ export enum Font {
     superscript = "superscript",
     bold = "bold",
     italic = "italic",
-    mathCal = "mathcal",
-    mathFrak = "mathfrak",
-    mathBB = "mathbb",
+    mathcal = "mathcal",
+    mathfrak = "mathfrak",
+    mathbb = "mathbb",
     mathsf = "mathsf",
     mathtt = "mathtt",
     mathscr = "mathscr"

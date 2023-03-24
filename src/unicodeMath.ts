@@ -1,114 +1,13 @@
 import {
-    TextDocument, Position, Range, CompletionItem, TextEditor,
+    TextDocument, Position, Range, CompletionItem, 
     TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
+import {Font, StrWithRange, } from "./helpers/types"
+import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const"
+import { maxBy, range, unique } from "./helpers/functions"
 
-/**
- * Give the max of an array with respect to some function
- *
- * @param by compute the values to compare 
- * @param arr the array to compare
- * @returns the max element in arr with respect to `by`, and `null` if the array is empty
- */
-function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
-    if (arr.length === 0) { return null }
-    else {
-        const [head, tail] = [arr[0], arr.slice(1)]
-        return tail.reduce(
-            (elem, curMax) => by(curMax) >= by(elem) ? curMax : elem, head
-        )
-    }
-}
-
-/**
- * get the range from start to end
- * 
- * @param start the starting number, inclusive
- * @param end the ending number, noninclusive
- * @returns a list that contains all the numbers in between (do not include the end)
- */
-function range(start: number, end: number): number[] {
-    const length = end - start + 1 
-    return [...Array(length).keys()].map(elem => elem + start)
-}
-
-/**
- * Return the unique elements of a array
- * This function do not guarantee the order of the elements
- * 
- * @param arr the input array
- * @returns a array that contains all the unique elements of the input array 
- */
-function unique<T>(arr: T[]): T[] {
-    return [...new Set(arr)]
-}
-
-/**
- * The regular expression to match a word.
- * We currently allow `|()[]:!#$%&*+./<=>?@^-~\;` and all the word character in the definition of symbols and font command
- * Finally we add `{` and `}` because it is used in font commands
- */
-const wordRegex = new RegExp(/(\w|\||\(|\)|\[|\]|:|!|#|\$|%|&|\*|\+|\.|\/|<|=|>|\?|@|\^|-|~|\\|;|\{|\})+/, "gmu")
-
-const SPACE_KEY = 'space'
-
-/**
- * Types of string mappings, usually used for math fonts
- */
-enum Font {
-    subscript = "subscript",
-    superscript = "superscript",
-    bold = "bold",
-    italic = "italic",
-    mathCal = "mathcal",
-    mathFrak = "mathfrak",
-    mathBB = "mathbb",
-    mathsf = "mathsf",
-    mathtt = "mathtt",
-    mathscr = "mathscr"
-}
-
-/**
- * A string with its range on the document.
- */
-type StrWithRange = { str: string; range: Range }
-
-/**
- * Given a font type, find the configuration ID for its fontCommands.
- * 
- * @param font The type of the font
- * @returns the configuration ID for the font prefix
- */
-function getFontCommandSettingID(font: Font): string {
-    switch (font) {
-        case Font.subscript:
-            return "unicodeMathInput.SubscriptFontCommands"
-        case Font.superscript:
-            return "unicodeMathInput.SuperscriptFontCommands"
-        case Font.italic:
-            return "unicodeMathInput.ItalicFontCommands"
-        case Font.bold:
-            return "unicodeMathInput.BoldFontCommands"
-        case Font.mathCal:
-            return "unicodeMathInput.MathCalFontCommands"
-        case Font.mathFrak:
-            return "unicodeMathInput.MathFrakFontCommands"
-        case Font.mathBB:
-            return "unicodeMathInput.MathBBFontCommands"
-        case Font.mathsf:
-            return "unicodeMathInput.mathsfFontCommands"
-        case Font.mathtt:
-            return "unicodeMathInput.mathttFontCommands"
-        case Font.mathscr:
-            return "unicodeMathInput.mathscrFontCommands"
-    }
-}
-
-const doNotWarnCurLineString = "UNICODE-MATH-INPUT: Do not warn current line"
-
-export const convertibleDiagnosticsCode = "unicode-math-input.convertible-symbol"
 
 /**
  * A map that map the prefix to its corresponding maps
@@ -125,7 +24,6 @@ const fontCommands: string[] = Array.from(prefixToFontType.keys())
 
 // all the text of symbols
 const symbolTexts: Set<string> = new Set(symbols.keys())
-
 
 /**
  * Given a font, get the map corresponding to that type

@@ -38,3 +38,31 @@ export function range(start: number, end: number): number[] {
 export function unique<T>(arr: T[]): T[] {
     return [...new Set(arr)]
 }
+
+
+/**
+ * Given a list of conditions, return if any of them are equal to true
+ * 
+ * @param conditions a list of conditions
+ * @returns whether any of the given condition is true
+ */
+export function any(conditions: boolean[]): boolean {
+    for (const condition of conditions) {
+        if (condition) {return true}
+    }
+    return false
+}
+
+
+/**
+ * Given a list of conditions, return if all of them are equal to true
+ * 
+ * @param conditions a list of conditions
+ * @returns whether any of the given condition is true
+ */
+export function all(conditions: boolean[]): boolean {
+    for (const condition of conditions) {
+        if (!condition) {return false}
+    }
+    return true
+}

@@ -1,13 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable jsdoc/require-jsdoc */
 import * as path from 'path'
 import * as Mocha from 'mocha'
 import * as glob from 'glob'
 
-/**
- * Runs all tests in this folder, see
- * https://code.visualstudio.com/api/working-with-extensions/testing-extension
- * for detail.
- */
 export function run(): Promise<void> {
 	// Create the mocha test
 	const mocha = new Mocha({
@@ -17,8 +12,8 @@ export function run(): Promise<void> {
 	const testsRoot = path.resolve(__dirname, '..')
 
 	return new Promise((c, e) => {
-		glob('**/**.test.js', { cwd: testsRoot }, (err, files: string[]) => {
-			if (err === null) {
+		glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
+			if (err !== null) {
 				return e(err)
 			}
 

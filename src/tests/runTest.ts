@@ -1,11 +1,8 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import * as path from 'path'
 
 import { runTests } from '@vscode/test-electron'
 
-/**
- * the main function that runs all the tests, 
- * If there is any error, it will exit and return
- */
 async function main() {
 	try {
 		// The folder containing the Extension Manifest package.json
@@ -19,7 +16,7 @@ async function main() {
 		// Download VS Code, unzip it and run the integration test
 		await runTests({ extensionDevelopmentPath, extensionTestsPath })
 	} catch (err) {
-		console.error('Failed to run tests because of', err)
+		console.error('Failed to run tests')
 		process.exit(1)
 	}
 }

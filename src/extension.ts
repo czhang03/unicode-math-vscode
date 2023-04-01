@@ -7,6 +7,27 @@ const triggerStrs =
         .concat(workspace.getConfiguration().get("unicodeMathInput.TriggerStrings") as string[])
 
 /**
+ * Dynamically check whether the extension should be enabled in current document
+ * 
+ * @param document the current active document
+ * @returns whether the extension should be disabled in current document
+ */
+function enabled(document?: TextDocument) : boolean {
+    const disabledLanguageIDs = new Set(workspace.getConfiguration().get("unicodeMathInput.disableInLanguages") as string[])
+
+    const docLanguageID = document?.languageId ?? window.activeTextEditor?.document.languageId
+
+    // when no document was provided, extension should not enabled
+    if (docLanguageID === undefined) {return false}
+    // check if the language of current document is disabled
+    else if (disabledLanguageIDs.has(docLanguageID)) {return false}
+    // if it does not match all the condition above, then it should be enabled
+    else {return true}
+}
+
+
+
+/**
  * Function to run when the extension is activated 
  * 
  * @param context the editor context
@@ -17,6 +38,8 @@ export function activate(context: ExtensionContext) {
     const unicodeMath = new UnicodeMath(triggerStrs)
 
     // register config change 
+    // currently changing trigger string requires reloading window to re-register the completion provider.
+    // TODO: think about if there is a way to change trigger string without reloading.
     workspace.onDidChangeConfiguration(async (changeEvent) => {
         if (changeEvent.affectsConfiguration("unicodeMath.TriggerStrings") ||
             changeEvent.affectsConfiguration("unicodeMathInput.TriggerStrings")) {
@@ -39,7 +62,8 @@ export function activate(context: ExtensionContext) {
         '*',
         {
             provideCompletionItems(document: TextDocument, position: Position) {
-                return unicodeMath.provideCompletion(document, position)
+                // return completion only when it is enabled
+                return enabled(document) ? unicodeMath.provideCompletion(document, position) : []
             }
         },
         ...triggerStrs  // trigger completion on slash
@@ -47,44 +71,66 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(completionProvider)
 
     // register tab commit
-    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', () => unicodeMath.commit('tab')))
+    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', () => 
+        { if (enabled()) { unicodeMath.commit('tab') } }))
 
     // register diagnostic
     const convertibleDiagnostics = languages.createDiagnosticCollection("unicode-math-input.convertible")
     context.subscriptions.push(convertibleDiagnostics)
     // generate all the diagnostics
-    if (window.activeTextEditor !== undefined) {
+    if (window.activeTextEditor !== undefined && enabled(window.activeTextEditor.document)) {
         convertibleDiagnostics.set(
             window.activeTextEditor.document.uri,
             unicodeMath.genAllDiagnostic(window.activeTextEditor.document)
         )
     }
+
     // refresh diagnostic on editor change
     context.subscriptions.push(
         window.onDidChangeActiveTextEditor(editor => {
-            if (editor !== undefined && ! convertibleDiagnostics.has(editor.document.uri)) {
+            const enabledInCurEditor = enabled(editor?.document)
+            if (editor !== undefined && 
+                ! convertibleDiagnostics.has(editor.document.uri) && 
+                enabledInCurEditor) {
+
                 convertibleDiagnostics.set(
                     editor.document.uri,
                     unicodeMath.genAllDiagnostic(editor.document)
                 )
+
+            }
+            else if (editor !== undefined && ! enabledInCurEditor) {
+                convertibleDiagnostics.delete(editor.document.uri)
+            }
+            else if (editor !== undefined) {  // when not enabled
+                convertibleDiagnostics.delete(editor?.document.uri)
             }
         })
     )
     // refresh diagnostic on text change
     context.subscriptions.push(
         workspace.onDidChangeTextDocument(e => {
-            const curDiagnostic = convertibleDiagnostics.get(e.document.uri)
-            if (curDiagnostic !== undefined) {
+            const curDocument = e.document
+            const curURI = curDocument.uri
+            const curDiagnostic = convertibleDiagnostics.get(curURI)
+            const curEnabled = enabled(curDocument)
+            const diagnosticExists = convertibleDiagnostics.has(curURI)
+            if (curEnabled && diagnosticExists && curDiagnostic !== undefined) {
                 convertibleDiagnostics.set(
-                    e.document.uri,
-                    unicodeMath.updateChangedLinesDiagnostic(e, e.document, curDiagnostic)
+                    curURI,
+                    unicodeMath.updateChangedLinesDiagnostic(e, curDocument, curDiagnostic)
                 )
             }
-            else {
+            else if (curEnabled) {
                 convertibleDiagnostics.set(
-                    e.document.uri,
-                    unicodeMath.genAllDiagnostic(e.document)
+                    curURI,
+                    unicodeMath.genAllDiagnostic(curDocument)
                 )
+            }
+            else {  // when not enabled
+                // this should not be triggered, 
+                // as the diagnostic will be deleted when the config change. 
+                convertibleDiagnostics.delete(curURI)
             }
         })
     )

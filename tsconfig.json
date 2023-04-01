@@ -10,8 +10,6 @@
 		"rootDir": "src",
 		/* Strict Type-Checking Option */
 		"strict": true,   /* enable all strict type-checking options */
-		/* Additional Checks */
-		"strictNullChecks":true, /*Report on use of nullable instance as non-nullable*/
 	},
 	"exclude": [
 		"node_modules",

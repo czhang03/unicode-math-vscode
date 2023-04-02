@@ -71,8 +71,10 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(completionProvider)
 
     // register tab commit
-    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', () => 
-        { if (enabled()) { unicodeMath.commit('tab') } }))
+    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', async () => 
+        { if (enabled()) { unicodeMath.commit('tab') } 
+            else {await commands.executeCommand("tab")} 
+        }))
 
     // register diagnostic
     const convertibleDiagnostics = languages.createDiagnosticCollection("unicode-math-input.convertible")

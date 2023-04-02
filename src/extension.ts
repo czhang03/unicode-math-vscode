@@ -72,7 +72,7 @@ export function activate(context: ExtensionContext) {
 
     // register tab commit
     context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', async () => 
-        { if (enabled()) { unicodeMath.commit('tab') } 
+        { if (enabled()) { await unicodeMath.commit('tab') } 
             else {await commands.executeCommand("tab")} 
         }))
 

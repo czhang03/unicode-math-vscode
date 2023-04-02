@@ -124,7 +124,7 @@
 						"type": "string"
 					},
 					"default": [
-						"it", "mit", "mathit"
+						"i", "it", "mit", "mathit"
 					],
 					"description": "The commands to trigger conversion to italic font unicode, these strings do not include the trigger string."
 				},
@@ -135,7 +135,7 @@
 						"type": "string"
 					},
 					"default": [
-						"bf", "mbf", "mathbf"
+						"b", "bf", "mbf", "mathbf"
 					],
 					"description": "The commands to trigger conversion to bold font unicode, these strings do not include the trigger string."
 				},
@@ -168,7 +168,7 @@
 						"type": "string"
 					},
 					"default": [
-						"bb", "mbb", "mathbb"
+						"bb", "Bbb", "mbb", "mathbb"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathbb{}` font unicode, these strings do not include the trigger string."
 				},

@@ -38,10 +38,24 @@ you can set [custom trigger string](#custom-trigger-string) in the setting.
 I personally set the trigger strings as `["\", ";"]` in my LaTeX project. 
 
 
-## Tab Commit
+## Tab Commit (deprecated)
 
-When you press tab after a LaTeX symbol, it will convert the LaTeX symbol into unicode.
-The commit key can be changed by changing the keybinding for `unicode-math-input.commit`.
+We are phasing out tab commit, it will be disabled in next minor version for better experience. 
+
+Reasons to deprecate tab commit:
+
+Rebinding key do not work, 
+since we need to propagate the corresponding key press if the commit is unsuccessful.
+We can create command for all the keys that need to propagate 
+(one for space, one for tab, and other keys that don't need to propagate),
+but that is not a good user experience.
+
+Tab commit is also not a good experience in general, 
+it is one more key to press to commit a command. 
+
+We will replace it with a auto commit feature, 
+which will automatically commit all committable symbol as you type.
+And of course this will be able to be turned off by setting, per file, or per line. 
 
 ## Custom Trigger String
 
@@ -50,38 +64,62 @@ they can be any strings, even `"LaTeX"`, and there can be multiple ones.
 To disable this extension (typically used in LaTeX workspace),
 just set the trigger strings to empty list.
 
-## Prefix 
+## Custom Font Command 
 
-Currently we support the following prefixes:
+By default there is following font command:
 
-| Prefix  | LaTeX Command |
+| font command  | font |
 | --- | --- |
 | `^`  | superscript |
+| `sup`  | superscript |
 | `_`  | subscript |
-|`b:` | bold |
-|`bf:` | bold |
-|`mathbf:` | bold |
+| `sub`  | subscript |
+|`b` | bold |
+|`bf` | bold |
+|`mbf` | bold |
 |`mathbf` | bold |
-|`i:` | italic |
-|`it:` | italic |
-|`mathit:` | italic |
+|`i` | italic |
+|`it` | italic |
+|`mit` | italic |
 |`mathit` | italic |
-|`cal:` | `\mathcal` |
-|`mathcal:` | `\mathcal` |
+|`cal` | `\mathcal` |
+|`mcal` | `\mathcal` |
 |`mathcal` | `\mathcal` |
-|`frak:` | `\mathfrak` |
-|`mathfrak:` | `\mathfrak` |
+|`frak` | `\mathfrak` |
+|`mfrak` | `\mathfrak` |
 |`mathfrak` | `\mathfrak` |
-|`Bbb:` | `\mathbb` |
-|`mathbb:` | `\mathbb` |
+|`bb` | `\mathbb` |
+|`Bbb` | `\mathbb` |
+|`mbb` | `\mathbb` |
 |`mathbb` | `\mathbb` |
+|`sf` | `\mathsf` |
+|`msf:` | `\mathsf` |
+|`mathsf` | `\mathsf` |
+|`tt` | `\mathtt` |
+|`mtt` | `\mathtt` |
+|`mathtt` | `\mathtt` |
+|`scr` | `\mathscr` |
+|`mscr` | `\mathscr` |
+|`mathscr` | `\mathscr` |
 
-When you type a trigger string (like `\`) followed by prefix, then a word (without space),
+When you type a trigger string (like `\`) followed by 
 the extension will commit the unicode version of that font.
-For example when you type `\it:text<tab>`, `\it:text` will be changed to `𝑡𝑒𝑠𝑡`
+For example `\it{ABC}` will be committed to `𝐴𝐵𝐶`.
 
 **NOTICE**: not all math font (including super and subscript) of common characters are supported in unicode.
 When the char do not have the math font, the extension will not convert anything. 
+
+### Diagnostics
+
+The extension will show diagnostics for texts that can be converted to unicode, 
+and provide code action to convert them to unicode. 
+This can be disabled per line by: adding `UNICODE-MATH-INPUT: Do not warn current line` to a line. 
+
+In the future there will be ways to disable per file, by setting, or disable/enable it until/from a certain line.
+
+### Disable in language
+
+This extension can be configured to be dynamically disabled in all files with some language ids. 
 
 # License
 
@@ -108,11 +146,14 @@ This project is definitely not possible without these projects.
 
 # Roadmap
 
-- [ ] push a warning when commit failed with prefix.
+- [ ] auto-commit instead of tab commit. 
+- [ ] disable diagnostics per file.
+- [ ] disable/enable feature from/until a certain line
+- [ ] push a warning when commit failed with font command.
 - [ ] custom symbols.
-- [ ] detect custom prefix/symbol has overlap.
+- [ ] detect custom font/symbol has overlap.
 - [ ] detect testing environment and raise error for code that should not be reachable.
-- [ ] reverse search prefix or latex command.
+- [ ] reverse search font command or latex command.
 - [ ] automated CI documentation.
 - [ ] automatically pull character from upstream.
 - [ ] automatically PR to upstream.

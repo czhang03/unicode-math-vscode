@@ -12,7 +12,7 @@
 		"url": "https://github.com/czhang03/unicode-math-vscode"
 	},
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.76.0"
 	},
 	"categories": [
 		"Snippets"
@@ -245,7 +245,6 @@
 		"eslint": "^8.35.0",
 		"eslint-config-prettier": "^8.7.0",
 		"eslint-plugin-jsdoc": "^40.0.1",
-		"glob": "^7.1.4",
 		"fast-check": "^3.7.0",
 		"mocha": "^10.2.0",
 		"typescript": "^5.0.2",

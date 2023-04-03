@@ -380,7 +380,7 @@ export class UnicodeMath {
      * @returns a list of diagnostic data
      */
     public genAllDiagnostic(document: TextDocument): Diagnostic[] {
-        const allLines = [...Array(document.lineCount).keys()]
+        const allLines = range(0, document.lineCount)
             .map(lineNum => document.lineAt(lineNum))
 
         return this.genLinesDiagnostics(allLines)

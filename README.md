@@ -53,6 +53,8 @@ but that is not a good user experience.
 Tab commit is also not a good experience in general, 
 it is one more key to press to commit a command. 
 
+Tab commits has key conflict with completion, which is a very useful and essential feature.
+
 We will replace it with a auto commit feature, 
 which will automatically commit all committable symbol as you type.
 And of course this will be able to be turned off by setting, per file, or per line. 

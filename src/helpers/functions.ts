@@ -24,7 +24,7 @@ export function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null
  * @returns a list that contains all the numbers in between (do not include the end)
  */
 export function range(start: number, end: number): number[] {
-    const length = end - start + 1 
+    const length = end - start 
     return [...Array(length).keys()].map(elem => elem + start)
 }
 

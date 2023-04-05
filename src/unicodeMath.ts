@@ -122,7 +122,7 @@ function convertString(str: string): string | null {
 function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
     return new Set(
         event.contentChanges
-        .map(change => range(change.range.start.line, change.range.end.line))
+        .map(change => range(change.range.start.line, change.range.end.line + 1))
         .flat()
     )
         

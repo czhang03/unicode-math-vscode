@@ -112,18 +112,12 @@ export function activate(context: ExtensionContext) {
     // refresh diagnostic on text change
     context.subscriptions.push(
         workspace.onDidChangeTextDocument(e => {
+            // TODO: we are generating new diagnostic all the time after a text change
+            // probably not efficient, but the logic of moving around diagnostics are complicated
             const curDocument = e.document
             const curURI = curDocument.uri
-            const curDiagnostic = convertibleDiagnostics.get(curURI)
             const curEnabled = enabled(curDocument)
-            const diagnosticExists = convertibleDiagnostics.has(curURI)
-            if (curEnabled && diagnosticExists && curDiagnostic !== undefined) {
-                convertibleDiagnostics.set(
-                    curURI,
-                    unicodeMath.updateChangedLinesDiagnostic(e, curDocument, curDiagnostic)
-                )
-            }
-            else if (curEnabled) {
+            if (curEnabled) {
                 convertibleDiagnostics.set(
                     curURI,
                     unicodeMath.genAllDiagnostic(curDocument)

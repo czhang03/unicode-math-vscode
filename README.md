@@ -156,6 +156,8 @@ This project is definitely not possible without these projects.
 - [ ] disable diagnostics per file.
 - [ ] disable/enable feature from/until a certain line
 - [ ] push a warning when commit failed with font command.
+- [ ] Combine font command, like bold italic etc.
+- [ ] make the subscript `_` and superscript `^` special trigger strings
 - [ ] custom symbols.
 - [ ] detect custom font/symbol has overlap.
 - [ ] detect testing environment and raise error for code that should not be reachable.

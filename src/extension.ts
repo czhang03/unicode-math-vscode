@@ -125,7 +125,7 @@ export function activate(context: ExtensionContext) {
             }
             else {  // when not enabled
                 // this should not be triggered, 
-                // as the diagnostic will be deleted when the config change. 
+                // as the diagnostic will be deleted on editor refocus. 
                 convertibleDiagnostics.delete(curURI)
             }
         })

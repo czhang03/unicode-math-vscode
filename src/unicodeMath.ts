@@ -1,134 +1,88 @@
 import {
-    TextDocument, Position, Range, CompletionItem, TextEditor,
-    TextEditorEdit, commands, window, CompletionItemKind
+    TextDocument, Position, Range, CompletionItem, 
+    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
-import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap } from "./charMaps"
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
 import { symbols } from './symbols'
-
-/**
- * Give the max of an array with respect to some function
- *
- * @param by compute the values to compare 
- * @param arr the array to compare
- * @returns the max element in arr with respect to `by`, and `null` if the array is empty
- */
-function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
-    if (arr.length === 0) { return null }
-    else {
-        const [head, tail] = [arr[0], arr.slice(1)]
-        return tail.reduce(
-            (elem, curMax) => by(curMax) >= by(elem) ? curMax : elem, head
-        )
-    }
-}
-
-
-const SPACE_KEY = 'space'
-
-/**
- * Types of string mappings, usually used for math fonts
- */
-enum StringMapType {
-    superscript = "Superscript",
-    subscript = "Subscript",
-    bold = "Bold",
-    italic = "Italic",
-    mathCal = "mathcal",
-    mathFrak = "mathfrak",
-    mathBB = "mathbb",
-}
-
-/**
- * A string with its range on the document.
- */
-type StrWithRange = { str: string; range: Range }
+import { Font, StrWithRange } from "./helpers/types"
+import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const"
+import { maxBy, range, unique } from "./helpers/functions"
 
 
 /**
  * A map that map the prefix to its corresponding maps
  */
-const prefixToMapType: Map<string, StringMapType> = new Map([
-    ["^", StringMapType.superscript],
-    ["_", StringMapType.subscript],
+const prefixToFontType: Map<string, Font> = new Map(
+    Object.values(Font)
+        .map(type => (workspace.getConfiguration().get(getFontCommandSettingID(type)) as string[])
+            .map(prefix => [prefix, type] as [string, Font]))
+        .flat()
+)
 
-    ["b:", StringMapType.bold],
-    ["bf:", StringMapType.bold],
-    ["mathbf:", StringMapType.bold],
-    ["mathbf", StringMapType.bold],
-
-    ["i:", StringMapType.italic],
-    ["it:", StringMapType.italic],
-    ["mathit:", StringMapType.italic],
-    ["mathit", StringMapType.italic],
-
-    ["cal:", StringMapType.mathCal],
-    ["mathcal:", StringMapType.mathCal],
-    ["mathcal", StringMapType.mathCal],
-
-    ["frak:", StringMapType.mathFrak],
-    ["mathfrak:", StringMapType.mathFrak],
-    ["mathfrak", StringMapType.mathFrak],
-
-    ["Bbb:", StringMapType.mathBB],
-    ["mathbb:", StringMapType.mathBB],
-    ["mathbb", StringMapType.mathBB],
-])
-
-// all the possible prefixes
-const prefixes: string[] = Array.from(prefixToMapType.keys())
-
+// all the possible fontCommands
+const fontCommands: string[] = Array.from(prefixToFontType.keys())
 
 /**
- * Given a map type, get the map corresponding to that type
+ * Given a font, get the map corresponding to that type
  * 
- * @param mapType the type of the map
+ * @param font the type of the map
  * @returns a map mapping a "char" to its corresponding formatted version 
  *  The key and value of the map needs to be singleton strings
  */
-function mapTypeToMap(mapType: StringMapType): Map<string, string> {
-    switch (mapType) {
-        case StringMapType.superscript: return supsMap
-        case StringMapType.subscript: return subsMap
-        case StringMapType.bold: return boldMap
-        case StringMapType.italic: return italicMap
-        case StringMapType.mathCal: return calMap
-        case StringMapType.mathFrak: return frakMap
-        case StringMapType.mathBB: return bbMap
+function fontToMap(font: Font): Map<string, string> {
+    switch (font) {
+        case Font.superscript: return supsMap
+        case Font.subscript: return subsMap
+        case Font.bold: return boldMap
+        case Font.italic: return italicMap
+        case Font.mathcal: return calMap
+        case Font.mathfrak: return frakMap
+        case Font.mathbb: return bbMap
+        case Font.mathsf: return sfMap
+        case Font.mathtt: return ttMap
+        case Font.mathscr: return scrMap
     }
 }
 
 
 /**
- * Given a word, strip the prefix, and get the map type that prefix correspond to 
- * Notice this will automatically match the longest prefix to avoid ambiguity in the prefix
+ * Given a string, and get the font type corresponding to the command
+ * and the content of the string without the command
  * 
- * @param word the pre-converted ascii word that the user typed
- * @returns the map type corresponding to the string, and the string with prefix striped
+ * Notice that this function assume there is no ambiguity in the matching. 
+ * i.e. the string can only be matched with at most one font
+ * 
+ * @param word the pre-converted ascii word that the user typed, does not include the trigger string
+ * @returns the font type corresponding of the command, and the string with command stripped
  */
-function stripPrefix(word: string): [StringMapType, string] | null {
-    const validPrefix = prefixes.filter((prefix) => word.startsWith(prefix))
+function getFont(word: string): [Font, string] | null {
 
-    // compute the longest prefix, if there is no valid prefix, return null
-    const longestPrefix = maxBy((prefix) => prefix.length, validPrefix)
-    if (longestPrefix === null) { return null }
+    const matchedFonts = Array.from(prefixToFontType)
+        // matches all the prefix
+        .map(([prefix, font]) => [font, word.match(`^${prefix}{(.*)}$`)] as [Font, RegExpMatchArray | null])
+        // filters out the match failure
+        .filter((res): res is [Font, RegExpMatchArray] => (res[1] !== null))
+        // return the matched string (first match group after the entire string) and the font to convert
+        .map(([font, match]) => [font, match[1]] as [Font, string])
 
-    const wordWithoutPrefix = word.slice(longestPrefix.length)
-    const mapType = prefixToMapType.get(longestPrefix)
-
-    return mapType ? [mapType, wordWithoutPrefix] : null
+    if (matchedFonts.length === 0) {return null} 
+    else {
+        // return the longest matches
+        return matchedFonts[0]
+    } 
 }
 
 /**
- * Given a string and a map type, convert it to its corresponding unicode version.
- * This function will ignoring unknown characters
+ * Given a string and a font, convert it to its corresponding unicode version.
+ * When there is unknown characters the function will fail.
  * 
  * @param str the input string, typed by the user
  * @param type the conversion type (typically math fonts)
  * @returns the unicode version of the converted string
  */
-function mapString(str: string, type: StringMapType): string | null {
+function toFont(str: string, type: Font): string | null {
     const mappedArr = str.split("")
-        .map(char => mapTypeToMap(type).get(char) ?? null)
+        .map(char => fontToMap(type).get(char) ?? null)
 
 
     if (mappedArr.filter((elem) => elem === null).length !== 0) {
@@ -150,19 +104,66 @@ function mapString(str: string, type: StringMapType): string | null {
  */
 function convertString(str: string): string | null {
 
-    const [mapType, withoutPrefix] = stripPrefix(str) ?? [null, null]
+    const [font, content] = getFont(str) ?? [null, null]
 
     // if a prefix cannot be found, then fallback to search in symbols
-    if (mapType === null && withoutPrefix === null) { return symbols.get(str) || null }
+    if (font === null && content === null) { return symbols.get(str) ?? null }
 
     // if prefix can be found, using prefix
-    else { return mapString(withoutPrefix, mapType) }
+    else { return toFont(content, font) }
+}
+
+/**
+ * Get all the lines that was changed from the text change event
+ * 
+ * @param event the text on document changed
+ * @returns a set of changed line numbers.
+ */
+function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
+    return new Set(
+        event.contentChanges
+        .map(change => range(change.range.start.line, change.range.end.line + 1))
+        .flat()
+    )
+        
 }
 
 
-export class UnicodeMath {
-    constructor(private readonly triggerStrs: string[]) {
+/**
+ * A helper function that pick the trigger and package the information nicely into StrWithRange
+ * given all the possible splits of trigger and string,
+ * pick the "last trigger" (defined by the end of the trigger string)
+ * and package the result nicely into StrWithRange.
+ * 
+ * @param possibleTriggers each trigger with its rest of the string, and the range of the entire string with trigger
+ * @returns range and str of the trigger and the rest of the string
+ */
+function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange, StrWithRange] | null{
+    const pickedTrigger = maxBy(([trigger, _str, range]) => range.start.character + trigger.length, possibleTriggers)
+
+    if (pickedTrigger === null) {return null}  // the input `possibleTriggers` is empty
+    else {
+        const [trigger, str, range] = pickedTrigger
+
+        const triggerEnd = range.start.translate(0, trigger.length - 1)
+        const triggerRange = new Range(range.start, triggerEnd)
+
+        const strStart = triggerEnd.translate(0, 1)
+        const strRange = new Range(strStart, range.end)
+
+        return [
+            {str: trigger, range: triggerRange},
+            {str: str, range: strRange}
+        ]
     }
+}
+
+
+
+
+export class UnicodeMath {
+
+    constructor(private readonly triggerStrs: string[]) {}
 
 
     /**
@@ -176,50 +177,29 @@ export class UnicodeMath {
     private genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
         console.debug(`completion triggered by ${trigger}, current word is ${word}`)
 
-        // special case if the string matches any prefix
-        // then just return how current string will be converted
-        const [mapType, withoutPrefix] = stripPrefix(word) ?? [null, null]
-        if (mapType && withoutPrefix) {
-            console.debug(`matched prefix of ${mapType}`)
+        // compute all the possible completion items (all the unicode and fontCommands)
+        const prefixCompletionItems = fontCommands.map(prefix => {
+            const completion =
+                new CompletionItem(`${trigger}${prefix}{}`, CompletionItemKind.Snippet)
+            completion.detail = prefixToFontType.get(prefix)?.concat(" prefix")
+            completion.range = totalRange
+            // retrigger completion after prefix, to complete the map string
+            completion.insertText = new SnippetString(`${trigger}${prefix}{$1}`)
+            return completion
+        })
 
-            const converted = mapString(withoutPrefix, mapType)
-            // do not generate completion if the string cannot be converted
-            if (converted === null) { return [] }
-            else {
-                const completion = new CompletionItem(trigger.concat(word), CompletionItemKind.Text)
+        const symbolCompletionsItems =
+            Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
+                const completion: CompletionItem =
+                    new CompletionItem(trigger.concat(inpStr), CompletionItemKind.Constant)
+                completion.detail = unicodeChar
+                completion.insertText = unicodeChar
                 completion.range = totalRange
-                completion.detail = converted
-                completion.insertText = converted
-
-                return [completion]
-            }
-        }
-
-        // default case, return all the possible completion items (all the unicode and prefixes)
-        else {
-
-            const prefixCompletionItems = prefixes.map(prefix => {
-                const completion =
-                    new CompletionItem(trigger.concat(prefix), CompletionItemKind.Keyword)
-                completion.range = totalRange
-                // retrigger completion after prefix, to complete the map string
-                completion.command =
-                    { command: 'editor.action.triggerSuggest', title: 'completing after prefix' }
                 return completion
             })
 
-            const symbolCompletionsItems =
-                Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
-                    const completion: CompletionItem =
-                        new CompletionItem(trigger.concat(inpStr), CompletionItemKind.Constant)
-                    completion.detail = unicodeChar
-                    completion.insertText = unicodeChar
-                    completion.range = totalRange
-                    return completion
-                })
 
-            return prefixCompletionItems.concat(symbolCompletionsItems)
-        }
+        return prefixCompletionItems.concat(symbolCompletionsItems)
     }
 
     /**
@@ -231,7 +211,7 @@ export class UnicodeMath {
      */
     public provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
         const [triggerWithRange, wordWithRange] = this.evalPosition(document, position) ?? [null, null]
-        if (!triggerWithRange || !wordWithRange) { return [] }
+        if (triggerWithRange === null || wordWithRange === null) { return [] }
 
         const triggerRange = triggerWithRange.range
         const wordRange = wordWithRange.range
@@ -239,58 +219,34 @@ export class UnicodeMath {
             triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange)
         )
     }
-
+    
     /**
      * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
      * TODO: this function is slightly too long
      * 
      * @param document the text document that is on the screen
-     * @param position position of the cursor
+     * @param cursorPosition position of the cursor
      * @returns  the trigger string with its range, and the word with its range
      */
-    private evalPosition(document: TextDocument, position: Position): [StrWithRange, StrWithRange] | null {
+    private evalPosition(document: TextDocument, cursorPosition: Position): [StrWithRange, StrWithRange] | null {
         // at the start of the line, there is nothing in front.
-        if (position.character === 0) { return null }
-        try {
-            const lineStart = new Position(position.line, 0)
-            const lnRange = new Range(lineStart, position)
-            const line = document.getText(lnRange)
+        if (cursorPosition.character === 0) { return null }
+        const lineStart = new Position(cursorPosition.line, 0)
+        const lnRange = new Range(lineStart, cursorPosition)
+        const line = document.getText(lnRange)
 
-            // all the trigger strings with its end index
-            const triggerStrsWithStarts: [string, number][] = this.triggerStrs
-                .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
-                .filter(([_trigger, start]) => start !== -1)
-            const lastStrEndIdx = maxBy(
-                ([trigger, start]) => start + trigger.length,
-                triggerStrsWithStarts)
-
-            // there is no trigger available, then return.
-            // probably not efficient, a better way is to check at the front.
-            if (lastStrEndIdx === null) { return null }
-            const [trigger, triggerStartIdx] = lastStrEndIdx
-            const triggerEndIdx = triggerStartIdx + trigger.length - 1
-
-            // compute the word, slice from the end of the trigger string
-            // do not include the last character of the trigger str.
-            const wordStartIdx = triggerEndIdx + 1
-            const word = line.slice(wordStartIdx)
-
-            // compute the range, start from the start of trigger string
-            // end at the end of the entire word.
-            const triggerStart = new Position(position.line, triggerStartIdx)
-            const triggerEnd = new Position(position.line, triggerEndIdx)
-            const wordStart = new Position(position.line, wordStartIdx)
-            const wordEnd = wordStart.translate(0, word.length)
-
-            return [
-                { str: trigger, range: new Range(triggerStart, triggerEnd) },
-                { str: word, range: new Range(wordStart, wordEnd) }
-            ]
-        } catch (e) {
-            // this part is legacy code, just in case it can really catch some error.
-            console.error("unexpected error, while finding word in front of the cursor", e)
-            return null
-        }
+        // all the trigger strings with its end index
+        const triggerStrsWithRange = this.triggerStrs
+            .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
+            .filter(([_trigger, start]) => start !== -1)
+            .map(([trigger, triggerStart]) => {
+                const triggerEnd = triggerStart + trigger.length - 1
+                const content = line.slice(triggerEnd + 1)
+                const totalRange = new Range(new Position(cursorPosition.line, triggerStart), cursorPosition)
+                return [trigger, content, totalRange] as [string, string, Range]
+            })
+        
+        return pickTrigger(triggerStrsWithRange)
     }
 
 
@@ -306,9 +262,10 @@ export class UnicodeMath {
      * @returns nothing
      */
     public async commit(key: string): Promise<void> {
-        if (!key || !window.activeTextEditor || !window.activeTextEditor.selection) { return }
+        // if the editor is unavailable stop the process
+        const editor = window.activeTextEditor
+        if (editor === undefined) { return }
 
-        const editor: TextEditor = window.activeTextEditor
         const doKey = async () => {
             if (key === SPACE_KEY) {
                 await commands.executeCommand('type', { source: 'keyboard', text: ' ' })
@@ -322,17 +279,17 @@ export class UnicodeMath {
         await editor.edit((editor: TextEditorEdit) => {
             window.activeTextEditor?.selections.map((v) => {
                 const position = v.start
-                if (window.activeTextEditor) {
+                if (window.activeTextEditor !== undefined) {
                     const [triggerWithRange, wordWithRange] =
                         this.evalPosition(window.activeTextEditor.document, position) ?? [null, null]
 
-                    if (wordWithRange && triggerWithRange) {
+                    if (wordWithRange !== null && triggerWithRange !== null) {
                         console.debug(`trying to commit ${wordWithRange.str}`)
                         // the total range of word including trigger
                         const totalRange = triggerWithRange.range.union(wordWithRange.range)
                         const changed = convertString(wordWithRange.str)
-                        console.debug(changed ? `committing to ${changed}` : `nothing matched`)
-                        if (changed) {
+                        console.debug(changed !== null && changed !== "" ? `committing to ${changed}` : `nothing matched`)
+                        if (changed !== null && changed !== "") {
                             editor.delete(totalRange)
                             editor.insert(totalRange.start, changed)
                             c = true
@@ -346,11 +303,88 @@ export class UnicodeMath {
         if (!c || key === SPACE_KEY) { return doKey() }
     }
 
-}
+    /**
+     * Generate all the possible conversions for a string including triggers
+     * 
+     * @param stringWithTrigger a string with triggers
+     * @returns a list of possible unicode conversions
+     */
+    public getPossibleConversions(stringWithTrigger: string): string[] {
+        const validTriggers = this.triggerStrs.filter(trigger => stringWithTrigger.startsWith(trigger))
 
+        const contents = validTriggers.map((trigger) => stringWithTrigger.slice(trigger.length))
+        return contents
+            .map((content) => convertString(content))
+            .filter((res): res is string => res !== null)
+    } 
 
-export const testing = {
-    prefixes,
-    stripPrefix,
-    convertString
+    /**
+     * Generate diagnostic for given lines
+     * the diagnostic includes all the symbols that can be converted
+     * 
+     * @param lines the TextLines that needs to generate diagnostics
+     * @returns a list of diagnostics 
+     */
+    private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
+        return lines
+            .filter(line => ! line.text.includes(doNotWarnCurLineString))
+            .map(line => [...line.text.matchAll(wordRegex)]
+            .map(match => {
+
+                const word = match[0]
+                const wordStart = match.index
+
+                const possibleConversions = this.getPossibleConversions(word)
+
+                if (possibleConversions.length === 0 || wordStart === undefined) {return null}
+                else {
+                    const lineNum = line.lineNumber
+                    const range = new Range(lineNum, wordStart, lineNum, wordStart + word.length)
+                    const diagnostic = new Diagnostic(range, `${word} can be converted to ${unique(possibleConversions).join()}`, DiagnosticSeverity.Information)
+                    diagnostic.code = convertibleDiagnosticsCode
+                    return diagnostic
+                }
+            })).flat()
+            .filter((res): res is Diagnostic => res !== null)
+    }
+
+    /**
+     * Given a change in the text, update the list of diagnostics for these changed lines
+     * 
+     * @param event the document change event
+     * @param document the text document
+     * @param origDiagnostics the original diagnostics of the file
+     * @returns a new list of diagnostics that refreshes the lines that have been changed
+     */
+    public updateChangedLinesDiagnostic(event: TextDocumentChangeEvent, document: TextDocument, origDiagnostics: readonly Diagnostic[]): Diagnostic[] {
+        const changedLineNums = getChangedLineNums(event)
+
+        // TODO: we are assuming the diagnostic is only on a single line, 
+        // we should test this during testing
+        const previousDiag = origDiagnostics
+            .filter(diag => ! changedLineNums.has(diag.range.start.line))
+
+        const changedLines = [...changedLineNums]
+            .map(lineNum => document.lineAt(lineNum))
+        
+        const newDiag = this.genLinesDiagnostics(changedLines)
+
+        return previousDiag.concat(newDiag)
+
+    }
+
+    /**
+     * Generate diagnostics for the entire document
+     * 
+     * @param document the entire text document currently being edited
+     * @returns a list of diagnostic data
+     */
+    public genAllDiagnostic(document: TextDocument): Diagnostic[] {
+        const allLines = range(0, document.lineCount)
+            .map(lineNum => document.lineAt(lineNum))
+
+        return this.genLinesDiagnostics(allLines)
+        
+    }
+
 }

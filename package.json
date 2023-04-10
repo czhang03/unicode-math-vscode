@@ -2,7 +2,7 @@
 	"name": "unicode-math-input",
 	"displayName": "Unicode Math Input",
 	"description": "Easy way to insert unicode math symbols ∀ programming languages",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"publisher": "czhang03",
 	"license": "LGPL-3.0",
 	"homepage": "https://github.com/czhang03/unicode-math-vscode",
@@ -12,7 +12,7 @@
 		"url": "https://github.com/czhang03/unicode-math-vscode"
 	},
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.76.0"
 	},
 	"categories": [
 		"Snippets"
@@ -47,6 +47,19 @@
 			"title": "Unicode Math Input",
 			"properties": {
 				"unicodeMath.TriggerStrings": {
+					"title": "Trigger Strings (deprecated)",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"\\"
+					],
+					"description": "This is the strings that triggers the completion and commit, default is '\\'",
+					"markdownDeprecationMessage": "This setting will be deprecated at 1.0, please use `unicodeMathInput.TriggerStrings` instead"
+				},
+				"unicodeMathInput.TriggerStrings": {
+					"title": "Trigger Strings",
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -55,6 +68,151 @@
 						"\\"
 					],
 					"description": "This is the strings that triggers the completion and commit, default is '\\'"
+				},
+				"unicodeMath.WarnPrefixFail": {
+					"type": "string",
+					"enum": ["on", "off", "concise"],
+					"enumDescriptions": [
+						"send a warning when some character cannot be converted to the font described by the prefix",
+						"do not send a warning when some character cannot be converted to the font described by the prefix",
+						"send a concise (modal) warning when some character cannot be converted to the font described by the prefix"
+					],
+					"default": [
+						"on"
+					],
+					"description": "Send a warning when there is some character cannot be converted to unicode in the prefix conversion"
+				},
+				"unicodeMath.WarnSymbolFail": {
+					"type": "string",
+					"enum": ["on", "off", "concise"],
+					"enumDescriptions": [
+						"send a warning when some LaTeX command cannot be converted  to unicode",
+						"do not send a warning when some LaTeX command cannot be converted to unicode",
+						"send a concise (modal) warning when some LaTeX command cannot be converted to unicode"
+					],
+					"default": [
+						"off"
+					],
+					"description": "Send a warning when a symbol cannot be converted to unicode"
+				},
+				"unicodeMathInput.SubscriptFontCommands": {
+					"title": "Subscript Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"_", "sub"
+					],
+					"description": "The commands to trigger conversion to unicode subscripts, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.SuperscriptFontCommands": {
+					"title": "Superscript Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"^", "sup"
+					],
+					"description": "The commands to trigger conversion to unicode superscripts, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.ItalicFontCommands": {
+					"title": "Italic Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"i", "it", "mit", "mathit"
+					],
+					"description": "The commands to trigger conversion to italic font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.BoldFontCommands": {
+					"title": "Bold Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"b", "bf", "mbf", "mathbf"
+					],
+					"description": "The commands to trigger conversion to bold font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.MathCalFontCommands": {
+					"title": "mathcal Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"cal", "mcal", "mathcal"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\mathcal{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.MathFrakFontCommands": {
+					"title": "mathfrak Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"frak", "mfrak", "mathfrak"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\mathfrak{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.MathBBFontCommands": {
+					"title": "mathbb Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"bb", "Bbb", "mbb", "mathbb"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\mathbb{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.mathsfFontCommands": {
+					"title": "mathsf Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"sf", "msf", "mathsf"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\mathsf{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.mathttFontCommands": {
+					"title": "mathtt Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"tt", "mtt", "mathtt"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\mathtt{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.mathscrFontCommands": {
+					"title": "mathscr Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"scr", "mscr", "mathscr"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\mathscr{}` font unicode, these strings do not include the trigger string."
+				},
+				"unicodeMathInput.disableInLanguages": {
+					"title": "Disable In The Following Languages",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [ ],
+					"markdownDescription": "Unicode Math Input will not be activated when the [language IDs](https://code.visualstudio.com/docs/languages/identifiers) of current file is in this list"
 				}
 			}
 		}
@@ -64,8 +222,8 @@
 		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-		"test-compile": "tsc -p ./",
 		"lint": "eslint \"src/**/*.ts\"",
+		"test-compile": "tsc -p ./",
 		"pretest": "npm run test-compile",
 		"test": "node ./out/tests/runTest.js"
 	},
@@ -77,19 +235,19 @@
 	"devDependencies": {
 		"@types/glob": "^8.1.0",
 		"@types/mocha": "^10.0.1",
-		"@types/node": "^16.11.7",
-		"@types/vscode": "^1.74.0",
-		"@typescript-eslint/eslint-plugin": "^5.54.0",
-		"@typescript-eslint/parser": "^5.54.0",
-		"@vscode/test-electron": "^1.6.1",
+		"@types/node": "^18.15.3",
+		"@types/vscode": "^1.76.0",
+		"@typescript-eslint/eslint-plugin": "^5.54.1",
+		"@typescript-eslint/parser": "^5.55.0",
+		"@vscode/test-electron": "^2.3.0",
 		"@vscode/vsce": "^2.18.0",
-		"esbuild": "^0.17.11",
+		"esbuild": "^0.17.12",
 		"eslint": "^8.35.0",
-		"eslint-config-prettier": "^8.6.0",
-		"eslint-plugin-jsdoc": "^40.0.0",
+		"eslint-config-prettier": "^8.7.0",
+		"eslint-plugin-jsdoc": "^40.0.1",
 		"fast-check": "^3.7.0",
 		"mocha": "^10.2.0",
-		"typescript": "^4.9.5",
+		"typescript": "^5.0.2",
 		"ovsx": "^0.8.0"
 	}
 }

@@ -103,11 +103,8 @@ export function activate(context: ExtensionContext) {
                     unicodeMath.genAllDiagnostic(curDocument)
                 )
             }
-            else {  // when not enabled
-                // this should not be triggered, 
-                // as the diagnostic will be deleted when the config change. 
-                convertibleDiagnostics.delete(curURI)
-            }
+            // do nothing if current document is not enabled
+            // the diagnostic for current document should already be removed
         })
     )
     // remove diagnostic data when closed

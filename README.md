@@ -119,6 +119,10 @@ This can be disabled per line by: adding `UNICODE-MATH-INPUT: Do not warn curren
 
 In the future there will be ways to disable per file, by setting, or disable/enable it until/from a certain line.
 
+Known Issue: When a command is preceded/followed by characters in `|()[]:!#$%&*+./<=>?@^-~\;{}`,
+since all of these are valid characters in a command. 
+For example the `\top` in `(\top)` or the `\sigma` in `\sigma_{}` will not be recognized by the diagnostic. 
+
 ### Disable in language
 
 This extension can be configured to be dynamically disabled in all files with some language ids. 
@@ -152,6 +156,8 @@ This project is definitely not possible without these projects.
 - [ ] disable diagnostics per file.
 - [ ] disable/enable feature from/until a certain line
 - [ ] push a warning when commit failed with font command.
+- [ ] Combine font command, like bold italic etc.
+- [ ] make the subscript `_` and superscript `^` special trigger strings
 - [ ] custom symbols.
 - [ ] detect custom font/symbol has overlap.
 - [ ] detect testing environment and raise error for code that should not be reachable.

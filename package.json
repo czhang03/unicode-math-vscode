@@ -12,7 +12,7 @@
 		"url": "https://github.com/czhang03/unicode-math-vscode"
 	},
 	"engines": {
-		"vscode": "^1.76.0"
+		"vscode": "^1.78.0"
 	},
 	"categories": [
 		"Snippets"

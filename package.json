@@ -242,7 +242,7 @@
 		"@vscode/test-electron": "^2.3.0",
 		"@vscode/vsce": "^2.18.0",
 		"esbuild": "^0.17.19",
-		"eslint": "^8.35.0",
+		"eslint": "^8.41.0",
 		"eslint-config-prettier": "^8.7.0",
 		"eslint-plugin-jsdoc": "^40.0.1",
 		"fast-check": "^3.7.0",

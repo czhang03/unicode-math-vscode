@@ -1,3 +1,8 @@
+# V0.6.1
+
+- Update packages to the latest version
+- added some useful unicode including `⟦`, `⟧`, `⟸`.
+
 # V0.6.0
 
 - Add diagnostic functionality to warn about convertible strings.

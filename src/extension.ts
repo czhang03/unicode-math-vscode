@@ -37,26 +37,6 @@ export function activate(context: ExtensionContext) {
     // create class with trigger string
     const unicodeMath = new UnicodeMath(triggerStrs)
 
-    // register config change 
-    // currently changing trigger string requires reloading window to re-register the completion provider.
-    // TODO: think about if there is a way to change trigger string without reloading.
-    workspace.onDidChangeConfiguration(async (changeEvent) => {
-        if (changeEvent.affectsConfiguration("unicodeMath.TriggerStrings") ||
-            changeEvent.affectsConfiguration("unicodeMathInput.TriggerStrings")) {
-            console.debug("Trigger Strings updated, reloading the extension")
-            const selection =
-                await window.showWarningMessage(
-                    "Trigger string changed, please reload window for the change to take effect",
-                    "reload"
-                )
-
-            if (selection === "reload") {
-                console.debug("reload selected, trying to reload current window")
-                void commands.executeCommand("workbench.action.reloadWindow")
-            }
-        }
-    })
-
     // register the completion provider
     const completionProvider = languages.registerCompletionItemProvider(
         '*',
@@ -123,11 +103,8 @@ export function activate(context: ExtensionContext) {
                     unicodeMath.genAllDiagnostic(curDocument)
                 )
             }
-            else {  // when not enabled
-                // this should not be triggered, 
-                // as the diagnostic will be deleted on editor refocus. 
-                convertibleDiagnostics.delete(curURI)
-            }
+            // do nothing if current document is not enabled
+            // the diagnostic for current document should already be removed
         })
     )
     // remove diagnostic data when closed
@@ -141,6 +118,34 @@ export function activate(context: ExtensionContext) {
 			providedCodeActionKinds: [ CodeActionKind.QuickFix ]
 		})
 	)
+
+    // register config change 
+    //  - changing trigger string requires reloading window to re-register the completion provider.
+    //      TODO: think about if there is a way to change trigger string without reloading.
+    //  - on change the disabled language, check the current active editor, and delete the diagnostic when necessary
+    workspace.onDidChangeConfiguration(async (changeEvent) => {
+        if (changeEvent.affectsConfiguration("unicodeMath.TriggerStrings") ||
+            changeEvent.affectsConfiguration("unicodeMathInput.TriggerStrings")) {
+            console.debug("Trigger Strings updated, reloading the extension")
+            const selection =
+                await window.showWarningMessage(
+                    "Trigger string changed, please reload window for the change to take effect",
+                    "reload"
+                )
+
+            if (selection === "reload") {
+                console.debug("reload selected, trying to reload current window")
+                void commands.executeCommand("workbench.action.reloadWindow")
+            }
+        }
+
+        if (changeEvent.affectsConfiguration("unicodeMathInput.disableInLanguages") ) {
+            const curDocument = window.activeTextEditor?.document
+            if (! (curDocument === undefined) && ! enabled(curDocument)) {
+                convertibleDiagnostics.delete(curDocument.uri)
+            }
+        }
+    })
 
     console.debug("extension activated")
 }

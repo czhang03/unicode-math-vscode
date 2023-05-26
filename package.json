@@ -244,7 +244,7 @@
 		"esbuild": "^0.17.19",
 		"eslint": "^8.41.0",
 		"eslint-config-prettier": "^8.7.0",
-		"eslint-plugin-jsdoc": "^40.0.1",
+		"eslint-plugin-jsdoc": "^44.2.7",
 		"fast-check": "^3.7.0",
 		"mocha": "^10.2.0",
 		"typescript": "^5.0.4",

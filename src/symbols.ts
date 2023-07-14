@@ -1535,7 +1535,7 @@ const latexOpMap: Map<string, string> = new Map([
 	[">", "⟩"],
 	["<", "⟨"],
 	["christmastree", "🎄"],
-	["diamond", "♢"],
+	["diamond", "⋄"],
 	["bigcirc", "◯"],
 	["bullet", "∙"],
 	["circ", "∘"],

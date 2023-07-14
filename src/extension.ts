@@ -8,7 +8,6 @@ const triggerStrs =
 
 /**
  * Dynamically check whether the extension should be enabled in current document
- * 
  * @param document the current active document
  * @returns whether the extension should be disabled in current document
  */
@@ -29,7 +28,6 @@ function enabled(document?: TextDocument) : boolean {
 
 /**
  * Function to run when the extension is activated 
- * 
  * @param context the editor context
  */
 export function activate(context: ExtensionContext) {

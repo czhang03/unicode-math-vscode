@@ -12,7 +12,6 @@ export const SPACE_KEY = 'space'
 
 /**
  * Given a font type, find the configuration ID for its fontCommands.
- * 
  * @param font The type of the font
  * @returns the configuration ID for the font prefix
  */

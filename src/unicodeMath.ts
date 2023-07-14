@@ -24,7 +24,6 @@ const fontCommands: string[] = Array.from(prefixToFontType.keys())
 
 /**
  * Given a font, get the map corresponding to that type
- * 
  * @param font the type of the map
  * @returns a map mapping a "char" to its corresponding formatted version 
  *  The key and value of the map needs to be singleton strings
@@ -48,10 +47,9 @@ function fontToMap(font: Font): Map<string, string> {
 /**
  * Given a string, and get the font type corresponding to the command
  * and the content of the string without the command
- * 
+ *
  * Notice that this function assume there is no ambiguity in the matching. 
  * i.e. the string can only be matched with at most one font
- * 
  * @param word the pre-converted ascii word that the user typed, does not include the trigger string
  * @returns the font type corresponding of the command, and the string with command stripped
  */
@@ -75,7 +73,6 @@ function getFont(word: string): [Font, string] | null {
 /**
  * Given a string and a font, convert it to its corresponding unicode version.
  * When there is unknown characters the function will fail.
- * 
  * @param str the input string, typed by the user
  * @param type the conversion type (typically math fonts)
  * @returns the unicode version of the converted string
@@ -98,7 +95,6 @@ function toFont(str: string, type: Font): string | null {
 /**
  * Given a user inputted string, convert it into unicode, 
  * return null if it cannot be converted
- * 
  * @param str a input string, typed in the editor by the user
  * @returns the unicode version of the input string
  */
@@ -115,7 +111,6 @@ function convertString(str: string): string | null {
 
 /**
  * Get all the lines that was changed from the text change event
- * 
  * @param event the text on document changed
  * @returns a set of changed line numbers.
  */
@@ -134,7 +129,6 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
  * given all the possible splits of trigger and string,
  * pick the "last trigger" (defined by the end of the trigger string)
  * and package the result nicely into StrWithRange.
- * 
  * @param possibleTriggers each trigger with its rest of the string, and the range of the entire string with trigger
  * @returns range and str of the trigger and the rest of the string
  */
@@ -168,7 +162,6 @@ export class UnicodeMath {
 
     /**
      * Generate completion based on the string at cursor
-     * 
      * @param trigger the trigger string that triggered current completion, for example "\"
      * @param word the word following the trigger string, but not including
      * @param totalRange the range from the start of the trigger string to then end of the word
@@ -204,7 +197,6 @@ export class UnicodeMath {
 
     /**
      * Provide the completion items given the current document and cursor position
-     * 
      * @param document the current document on the editor
      * @param position the cursor position
      * @returns a list of completion item that is valid to the current position
@@ -223,7 +215,6 @@ export class UnicodeMath {
     /**
      * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
      * TODO: this function is slightly too long
-     * 
      * @param document the text document that is on the screen
      * @param cursorPosition position of the cursor
      * @returns  the trigger string with its range, and the word with its range
@@ -252,12 +243,11 @@ export class UnicodeMath {
 
     /**
      * I am not quiet happy with how this code looks, the null handling in Typescript doesn't seem to be great
-     * 
+     *
      * This function do the real editing when user commit using a tab
      * Notice that this do not handle the completion functionality
      * and its mutually exclusive with completion, 
      * i.e. if user get a unicode char using completion, then they don't need to invoke this function
-     * 
      * @param key the keypress that triggered this function
      * @returns nothing
      */
@@ -305,7 +295,6 @@ export class UnicodeMath {
 
     /**
      * Generate all the possible conversions for a string including triggers
-     * 
      * @param stringWithTrigger a string with triggers
      * @returns a list of possible unicode conversions
      */
@@ -321,7 +310,6 @@ export class UnicodeMath {
     /**
      * Generate diagnostic for given lines
      * the diagnostic includes all the symbols that can be converted
-     * 
      * @param lines the TextLines that needs to generate diagnostics
      * @returns a list of diagnostics 
      */
@@ -350,7 +338,6 @@ export class UnicodeMath {
 
     /**
      * Given a change in the text, update the list of diagnostics for these changed lines
-     * 
      * @param event the document change event
      * @param document the text document
      * @param origDiagnostics the original diagnostics of the file
@@ -375,7 +362,6 @@ export class UnicodeMath {
 
     /**
      * Generate diagnostics for the entire document
-     * 
      * @param document the entire text document currently being edited
      * @returns a list of diagnostic data
      */

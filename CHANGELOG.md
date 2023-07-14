@@ -1,3 +1,9 @@
+# V0.6.2
+
+- Added some useful alias to like `\nat ↦ ℕ`, `\rational ↦ ℚ`, `\real ↦ ℝ`
+- Changed diamond to be compatible with unicode-math package `⋄` (previously `\smwhtdiamond`) instead of `♢`.
+- Update packages.
+
 # V0.6.1
 
 - Update packages to the latest version

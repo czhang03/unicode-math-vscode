@@ -554,6 +554,7 @@ const latexOpMap: Map<string, string> = new Map([
 	["ntrianglerighteq", "⋭"],
 	["enleadertwodots", "‥"],
 	["ellipsis", "…"],
+	["ldots", "…"],
 	["vdots", "⋮"],
 	["cdots", "⋯"],
 	["adots", "⋰"],

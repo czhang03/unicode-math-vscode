@@ -2,7 +2,7 @@
 	"name": "unicode-math-input",
 	"displayName": "Unicode Math Input",
 	"description": "Easy way to insert unicode math symbols ∀ programming languages",
-	"version": "0.6.2-testing",
+	"version": "0.6.2",
 	"publisher": "czhang03",
 	"license": "LGPL-3.0",
 	"homepage": "https://github.com/czhang03/unicode-math-vscode",

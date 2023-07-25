@@ -2,6 +2,7 @@
 
 - Added some useful alias to like `\nat ↦ ℕ`, `\rational ↦ ℚ`, `\real ↦ ℝ`
 - Changed diamond to be compatible with unicode-math package `⋄` (previously `\smwhtdiamond`) instead of `♢`.
+- Renamed some legacy names like `\unicodecdots`, `\unicodeellipsis`.
 - Update packages.
 
 # V0.6.1

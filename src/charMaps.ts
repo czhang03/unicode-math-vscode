@@ -209,6 +209,7 @@ export const italicMap = new Map<string, string>([
     ["e", "𝑒"],
     ["f", "𝑓"],
     ["g", "𝑔"],
+    ["h", "ℎ"],
     ["i", "𝑖"],
     ["j", "𝑗"],
     ["k", "𝑘"],

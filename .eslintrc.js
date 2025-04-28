@@ -32,18 +32,6 @@ module.exports = {
     ],
     "root": true,
     "rules": {
-        "@typescript-eslint/member-delimiter-style": [
-            "warn",
-            {
-                "multiline": {
-                    "delimiter": "none",
-                },
-                "singleline": {
-                    "delimiter": "semi",
-                    "requireLast": false
-                }
-            }
-        ],
         "@typescript-eslint/naming-convention": "warn",
         "@typescript-eslint/no-unused-expressions": "warn",
 		'@typescript-eslint/no-explicit-any': "error",

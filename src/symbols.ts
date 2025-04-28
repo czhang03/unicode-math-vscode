@@ -48,7 +48,7 @@ const latexOpMap: Map<string, string> = new Map([
 	["ocommatopright", "̕"],
 	["droang", "̚"],
 	["wideutilde", "̰"],
-	["underbar", "̱"],
+	["underbar", "̲"],
 	["not", "̸"],
 	["upAlpha", "Α"],
 	["upBeta", "Β"],

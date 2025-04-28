@@ -13,7 +13,8 @@ export enum Font {
     mathbb = "mathbb",
     mathsf = "mathsf",
     mathtt = "mathtt",
-    mathscr = "mathscr"
+    mathscr = "mathscr",
+    smallcaps = "smallcaps"
 }
 
 /**

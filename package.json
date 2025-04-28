@@ -205,6 +205,17 @@
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathscr{}` font unicode, these strings do not include the trigger string."
 				},
+				"unicodeMathInput.smallcapsFontCommands": {
+					"title": "Smallcaps Font Commands",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"sc", "mathsc", "textsc"
+					],
+					"markdownDescription": "The commands to trigger conversion to `\\textsc{}` or `\\mathsc{}` font unicode, these strings do not include the trigger string."
+				},
 				"unicodeMathInput.disableInLanguages": {
 					"title": "Disable In The Following Languages",
 					"type": "array",

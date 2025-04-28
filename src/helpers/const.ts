@@ -37,6 +37,8 @@ export function getFontCommandSettingID(font: Font): string {
             return "unicodeMathInput.mathttFontCommands"
         case Font.mathscr:
             return "unicodeMathInput.mathscrFontCommands"
+        case Font.smallcaps:
+            return "unicodeMathInput.smallcapsFontCommands"
     }
 }
 

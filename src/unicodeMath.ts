@@ -2,7 +2,7 @@ import {
     TextDocument, Position, Range, CompletionItem, 
     TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
-import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap } from "./charMaps"
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap, scMap } from "./charMaps"
 import { symbols } from './symbols'
 import { Font, StrWithRange } from "./helpers/types"
 import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const"
@@ -40,6 +40,7 @@ function fontToMap(font: Font): Map<string, string> {
         case Font.mathsf: return sfMap
         case Font.mathtt: return ttMap
         case Font.mathscr: return scrMap
+	case Font.smallcaps: return scMap
     }
 }
 

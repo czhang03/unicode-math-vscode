@@ -40,7 +40,7 @@ function fontToMap(font: Font): Map<string, string> {
         case Font.mathsf: return sfMap
         case Font.mathtt: return ttMap
         case Font.mathscr: return scrMap
-        case Font.smallcaps: return scMap
+	case Font.smallcaps: return scMap
     }
 }
 

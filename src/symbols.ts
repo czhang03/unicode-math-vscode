@@ -12,6 +12,8 @@ const latexOpMap: Map<string, string> = new Map([
 	["mathslash", "/"],
 	["mathcolon", ":"],
 	["semicolon", ";"],
+	["fatsemi", "⨟"],
+	["zcmp", "⨟"],
 	["less", "<"],
 	["equal", "="],
 	["greater", ">"],

@@ -1187,7 +1187,6 @@ const latexOpMap: Map<string, string> = new Map([
 	["triangletimes", "⨻"],
 	["intprod", "⨼"],
 	["intprodr", "⨽"],
-	["fcmp", "⨾"],
 	["amalg", "⨿"],
 	["capdot", "⩀"],
 	["uminus", "⩁"],

@@ -3,8 +3,8 @@ import { convertibleDiagnosticsCode } from "./helpers/const"
 import { UnicodeMath} from "./unicodeMath"
 
 const triggerStrs = 
-        (workspace.getConfiguration().get("unicodeMath.TriggerStrings") as string[])
-        .concat(workspace.getConfiguration().get("unicodeMathInput.TriggerStrings") as string[])
+        (workspace.getConfiguration().get<string[]>("unicodeMath.TriggerStrings") ?? [])
+        .concat(workspace.getConfiguration().get<string[]>("unicodeMathInput.TriggerStrings") ?? [])
 
 /**
  * Dynamically check whether the extension should be enabled in current document
@@ -12,7 +12,7 @@ const triggerStrs =
  * @returns whether the extension should be disabled in current document
  */
 function enabled(document?: TextDocument) : boolean {
-    const disabledLanguageIDs = new Set(workspace.getConfiguration().get("unicodeMathInput.disableInLanguages") as string[])
+    const disabledLanguageIDs = new Set(workspace.getConfiguration().get<string[]>("unicodeMathInput.disableInLanguages") ?? [])
 
     const docLanguageID = document?.languageId ?? window.activeTextEditor?.document.languageId
 
@@ -83,7 +83,7 @@ export function activate(context: ExtensionContext) {
                 convertibleDiagnostics.delete(editor.document.uri)
             }
             else if (editor !== undefined) {  // when not enabled
-                convertibleDiagnostics.delete(editor?.document.uri)
+                convertibleDiagnostics.delete(editor.document.uri)
             }
         })
     )
@@ -107,7 +107,7 @@ export function activate(context: ExtensionContext) {
     )
     // remove diagnostic data when closed
     context.subscriptions.push(
-        workspace.onDidCloseTextDocument(doc => convertibleDiagnostics.delete(doc.uri))
+        workspace.onDidCloseTextDocument(doc => {convertibleDiagnostics.delete(doc.uri)})
     )
     
     // register code action 

@@ -20,4 +20,4 @@ export enum Font {
 /**
  * A string with its range on the document.
  */
-export type StrWithRange = { str: string; range: Range }
+export interface StrWithRange { str: string; range: Range }

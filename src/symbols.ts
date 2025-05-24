@@ -1,4 +1,4 @@
-const latexOpMap: Map<string, string> = new Map([
+const latexOpMap = new Map<string, string>([
 	["exclam", "!"],
 	["octothorpe", "#"],
 	["mathdollar", "$"],

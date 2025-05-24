@@ -12,9 +12,9 @@ import { maxBy, range, unique } from "./helpers/functions"
 /**
  * A map that map the prefix to its corresponding maps
  */
-const prefixToFontType: Map<string, Font> = new Map(
+const prefixToFontType = new Map<string, Font>(
     Object.values(Font)
-        .map(type => (workspace.getConfiguration().get(getFontCommandSettingID(type)) as string[])
+        .map(type => (workspace.getConfiguration().get<string[]>(getFontCommandSettingID(type)) ?? [])
             .map(prefix => [prefix, type] as [string, Font]))
         .flat()
 )

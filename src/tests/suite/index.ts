@@ -17,7 +17,7 @@ export async function run(): Promise<void> {
 		// Run the mocha test
 		mocha.run(failures => {
 			if (failures > 0) {
-				reject(new Error(`${failures} tests failed.`))
+				reject(new Error(`${String(failures)} tests failed.`))
 			} else {
 				resolve()
 			}

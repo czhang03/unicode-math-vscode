@@ -4,7 +4,7 @@
  * @param arr the array to compare
  * @returns the max element in arr with respect to `by`, and `null` if the array is empty
  */
-export function maxBy<T, TComp>(by: (elem: T) => TComp, arr: Array<T>): T | null {
+export function maxBy<T, TComp>(by: (elem: T) => TComp, arr: T[]): T | null {
     if (arr.length === 0) { return null }
     else {
         const [head, tail] = [arr[0], arr.slice(1)]

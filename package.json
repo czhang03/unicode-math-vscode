@@ -14,6 +14,7 @@
 	"engines": {
 		"vscode": "^1.76.0"
 	},
+	"type": "module",
 	"categories": [
 		"Snippets"
 	],
@@ -71,7 +72,11 @@
 				},
 				"unicodeMath.WarnPrefixFail": {
 					"type": "string",
-					"enum": ["on", "off", "concise"],
+					"enum": [
+						"on",
+						"off",
+						"concise"
+					],
 					"enumDescriptions": [
 						"send a warning when some character cannot be converted to the font described by the prefix",
 						"do not send a warning when some character cannot be converted to the font described by the prefix",
@@ -84,7 +89,11 @@
 				},
 				"unicodeMath.WarnSymbolFail": {
 					"type": "string",
-					"enum": ["on", "off", "concise"],
+					"enum": [
+						"on",
+						"off",
+						"concise"
+					],
 					"enumDescriptions": [
 						"send a warning when some LaTeX command cannot be converted  to unicode",
 						"do not send a warning when some LaTeX command cannot be converted to unicode",
@@ -102,7 +111,8 @@
 						"type": "string"
 					},
 					"default": [
-						"_", "sub"
+						"_",
+						"sub"
 					],
 					"description": "The commands to trigger conversion to unicode subscripts, these strings do not include the trigger string."
 				},
@@ -113,7 +123,8 @@
 						"type": "string"
 					},
 					"default": [
-						"^", "sup"
+						"^",
+						"sup"
 					],
 					"description": "The commands to trigger conversion to unicode superscripts, these strings do not include the trigger string."
 				},
@@ -124,7 +135,10 @@
 						"type": "string"
 					},
 					"default": [
-						"i", "it", "mit", "mathit"
+						"i",
+						"it",
+						"mit",
+						"mathit"
 					],
 					"description": "The commands to trigger conversion to italic font unicode, these strings do not include the trigger string."
 				},
@@ -135,7 +149,10 @@
 						"type": "string"
 					},
 					"default": [
-						"b", "bf", "mbf", "mathbf"
+						"b",
+						"bf",
+						"mbf",
+						"mathbf"
 					],
 					"description": "The commands to trigger conversion to bold font unicode, these strings do not include the trigger string."
 				},
@@ -146,7 +163,9 @@
 						"type": "string"
 					},
 					"default": [
-						"cal", "mcal", "mathcal"
+						"cal",
+						"mcal",
+						"mathcal"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathcal{}` font unicode, these strings do not include the trigger string."
 				},
@@ -157,7 +176,9 @@
 						"type": "string"
 					},
 					"default": [
-						"frak", "mfrak", "mathfrak"
+						"frak",
+						"mfrak",
+						"mathfrak"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathfrak{}` font unicode, these strings do not include the trigger string."
 				},
@@ -168,7 +189,10 @@
 						"type": "string"
 					},
 					"default": [
-						"bb", "Bbb", "mbb", "mathbb"
+						"bb",
+						"Bbb",
+						"mbb",
+						"mathbb"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathbb{}` font unicode, these strings do not include the trigger string."
 				},
@@ -179,7 +203,9 @@
 						"type": "string"
 					},
 					"default": [
-						"sf", "msf", "mathsf"
+						"sf",
+						"msf",
+						"mathsf"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathsf{}` font unicode, these strings do not include the trigger string."
 				},
@@ -190,7 +216,9 @@
 						"type": "string"
 					},
 					"default": [
-						"tt", "mtt", "mathtt"
+						"tt",
+						"mtt",
+						"mathtt"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathtt{}` font unicode, these strings do not include the trigger string."
 				},
@@ -201,7 +229,9 @@
 						"type": "string"
 					},
 					"default": [
-						"scr", "mscr", "mathscr"
+						"scr",
+						"mscr",
+						"mathscr"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\mathscr{}` font unicode, these strings do not include the trigger string."
 				},
@@ -212,7 +242,9 @@
 						"type": "string"
 					},
 					"default": [
-						"sc", "mathsc", "textsc"
+						"sc",
+						"mathsc",
+						"textsc"
 					],
 					"markdownDescription": "The commands to trigger conversion to `\\textsc{}` or `\\mathsc{}` font unicode, these strings do not include the trigger string."
 				},
@@ -222,7 +254,7 @@
 					"items": {
 						"type": "string"
 					},
-					"default": [ ],
+					"default": [],
 					"markdownDescription": "Unicode Math Input will not be activated when the [language IDs](https://code.visualstudio.com/docs/languages/identifiers) of current file is in this list"
 				}
 			}
@@ -244,7 +276,7 @@
 		}
 	},
 	"devDependencies": {
-		"glob": "^11.0.2",
+		"@eslint/js": "^9.27.0",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^22.15.3",
 		"@types/vscode": "^1.76.0",
@@ -253,13 +285,15 @@
 		"@vscode/test-electron": "^2.5.2",
 		"@vscode/vsce": "^3.3.2",
 		"esbuild": "^0.25.3",
-		"eslint": "^8.56.0",
+		"eslint": "^9.27.0",
 		"eslint-config-prettier": "^10.1.2",
 		"eslint-plugin-jsdoc": "^50.6.11",
 		"fast-check": "^4.1.1",
+		"glob": "^11.0.2",
 		"mocha": "^11.1.0",
-		"typescript": "^5.8.3",
+		"npm-check-updates": "^18.0.1",
 		"ovsx": "^0.10.2",
-		"npm-check-updates": "^18.0.1"
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.32.1"
 	}
 }

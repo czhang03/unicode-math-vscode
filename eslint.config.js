@@ -14,6 +14,7 @@ export default tseslint.config(
       },
     },
   },
+  { files: ["src/**/*.ts"] },
   {
     rules: {
       "@typescript-eslint/naming-convention": "warn",
@@ -48,7 +49,7 @@ export default tseslint.config(
   jsdoc.configs['flat/recommended'],
   // other configuration objects...
   {
-    files: ['**/*.ts'],
+    files: ["src/**/*.ts"],
     plugins: {
       jsdoc,
     },

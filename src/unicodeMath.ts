@@ -1,5 +1,5 @@
 import {
-    TextDocument, Position, Range, CompletionItem, 
+    TextDocument, Position, Range, CompletionItem,
     TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap, scMap } from "./charMaps"
@@ -40,7 +40,7 @@ function fontToMap(font: Font): Map<string, string> {
         case Font.mathsf: return sfMap
         case Font.mathtt: return ttMap
         case Font.mathscr: return scrMap
-	case Font.smallcaps: return scMap
+        case Font.smallcaps: return scMap
     }
 }
 
@@ -64,11 +64,11 @@ function getFont(word: string): [Font, string] | null {
         // return the matched string (first match group after the entire string) and the font to convert
         .map(([font, match]) => [font, match[1]] as [Font, string])
 
-    if (matchedFonts.length === 0) {return null} 
+    if (matchedFonts.length === 0) { return null }
     else {
         // return the longest matches
         return matchedFonts[0]
-    } 
+    }
 }
 
 /**
@@ -101,13 +101,17 @@ function toFont(str: string, type: Font): string | null {
  */
 function convertString(str: string): string | null {
 
-    const [font, content] = getFont(str) ?? [null, null]
+    const tryFontStr = getFont(str)
 
     // if a prefix cannot be found, then fallback to search in symbols
-    if (font === null && content === null) { return symbols.get(str) ?? null }
-
+    if (tryFontStr === null) {
+        return symbols.get(str) ?? null
+    }
     // if prefix can be found, using prefix
-    else { return toFont(content, font) }
+    else {
+        const [font, content] = tryFontStr
+        return toFont(content, font)
+    }
 }
 
 /**
@@ -118,10 +122,10 @@ function convertString(str: string): string | null {
 function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
     return new Set(
         event.contentChanges
-        .map(change => range(change.range.start.line, change.range.end.line + 1))
-        .flat()
+            .map(change => range(change.range.start.line, change.range.end.line + 1))
+            .flat()
     )
-        
+
 }
 
 
@@ -133,10 +137,10 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
  * @param possibleTriggers each trigger with its rest of the string, and the range of the entire string with trigger
  * @returns range and str of the trigger and the rest of the string
  */
-function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange, StrWithRange] | null{
+function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange, StrWithRange] | null {
     const pickedTrigger = maxBy(([trigger, _str, range]) => range.start.character + trigger.length, possibleTriggers)
 
-    if (pickedTrigger === null) {return null}  // the input `possibleTriggers` is empty
+    if (pickedTrigger === null) { return null }  // the input `possibleTriggers` is empty
     else {
         const [trigger, str, range] = pickedTrigger
 
@@ -147,8 +151,8 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
         const strRange = new Range(strStart, range.end)
 
         return [
-            {str: trigger, range: triggerRange},
-            {str: str, range: strRange}
+            { str: trigger, range: triggerRange },
+            { str: str, range: strRange }
         ]
     }
 }
@@ -158,7 +162,7 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
 
 export class UnicodeMath {
 
-    constructor(private readonly triggerStrs: string[]) {}
+    constructor(private readonly triggerStrs: string[]) { }
 
 
     /**
@@ -203,16 +207,20 @@ export class UnicodeMath {
      * @returns a list of completion item that is valid to the current position
      */
     public provideCompletion(document: TextDocument, position: Position): CompletionItem[] {
-        const [triggerWithRange, wordWithRange] = this.evalPosition(document, position) ?? [null, null]
-        if (triggerWithRange === null || wordWithRange === null) { return [] }
-
-        const triggerRange = triggerWithRange.range
-        const wordRange = wordWithRange.range
-        return this.genCompletions(
-            triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange)
-        )
+        const posContext = this.evalPosition(document, position)
+        if (posContext === null) {
+            return []
+        }
+        else {
+            const [triggerWithRange, wordWithRange] = posContext
+            const triggerRange = triggerWithRange.range
+            const wordRange = wordWithRange.range
+            return this.genCompletions(
+                triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange)
+            )
+        }
     }
-    
+
     /**
      * check the word (from the last `triggerStr`, like "\", to current cursor) at the current cursor position
      * TODO: this function is slightly too long
@@ -237,7 +245,7 @@ export class UnicodeMath {
                 const totalRange = new Range(new Position(cursorPosition.line, triggerStart), cursorPosition)
                 return [trigger, content, totalRange] as [string, string, Range]
             })
-        
+
         return pickTrigger(triggerStrsWithRange)
     }
 
@@ -271,10 +279,11 @@ export class UnicodeMath {
             window.activeTextEditor?.selections.map((v) => {
                 const position = v.start
                 if (window.activeTextEditor !== undefined) {
-                    const [triggerWithRange, wordWithRange] =
-                        this.evalPosition(window.activeTextEditor.document, position) ?? [null, null]
 
-                    if (wordWithRange !== null && triggerWithRange !== null) {
+                    const posContext = this.evalPosition(window.activeTextEditor.document, position)
+
+                    if (posContext !== null) {
+                        const [triggerWithRange, wordWithRange] = posContext
                         console.debug(`trying to commit ${wordWithRange.str}`)
                         // the total range of word including trigger
                         const totalRange = triggerWithRange.range.union(wordWithRange.range)
@@ -306,7 +315,7 @@ export class UnicodeMath {
         return contents
             .map((content) => convertString(content))
             .filter((res): res is string => res !== null)
-    } 
+    }
 
     /**
      * Generate diagnostic for given lines
@@ -316,24 +325,24 @@ export class UnicodeMath {
      */
     private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
         return lines
-            .filter(line => ! line.text.includes(doNotWarnCurLineString))
+            .filter(line => !line.text.includes(doNotWarnCurLineString))
             .map(line => [...line.text.matchAll(wordRegex)]
-            .map(match => {
+                .map(match => {
 
-                const word = match[0]
-                const wordStart = match.index
+                    const word = match[0]
+                    const wordStart = match.index
 
-                const possibleConversions = this.getPossibleConversions(word)
+                    const possibleConversions = this.getPossibleConversions(word)
 
-                if (possibleConversions.length === 0 || wordStart === undefined) {return null}
-                else {
-                    const lineNum = line.lineNumber
-                    const range = new Range(lineNum, wordStart, lineNum, wordStart + word.length)
-                    const diagnostic = new Diagnostic(range, `${word} can be converted to ${unique(possibleConversions).join()}`, DiagnosticSeverity.Information)
-                    diagnostic.code = convertibleDiagnosticsCode
-                    return diagnostic
-                }
-            })).flat()
+                    if (possibleConversions.length === 0) { return null }
+                    else {
+                        const lineNum = line.lineNumber
+                        const range = new Range(lineNum, wordStart, lineNum, wordStart + word.length)
+                        const diagnostic = new Diagnostic(range, `${word} can be converted to ${unique(possibleConversions).join()}`, DiagnosticSeverity.Information)
+                        diagnostic.code = convertibleDiagnosticsCode
+                        return diagnostic
+                    }
+                })).flat()
             .filter((res): res is Diagnostic => res !== null)
     }
 
@@ -350,11 +359,11 @@ export class UnicodeMath {
         // TODO: we are assuming the diagnostic is only on a single line, 
         // we should test this during testing
         const previousDiag = origDiagnostics
-            .filter(diag => ! changedLineNums.has(diag.range.start.line))
+            .filter(diag => !changedLineNums.has(diag.range.start.line))
 
         const changedLines = [...changedLineNums]
             .map(lineNum => document.lineAt(lineNum))
-        
+
         const newDiag = this.genLinesDiagnostics(changedLines)
 
         return previousDiag.concat(newDiag)
@@ -371,7 +380,7 @@ export class UnicodeMath {
             .map(lineNum => document.lineAt(lineNum))
 
         return this.genLinesDiagnostics(allLines)
-        
+
     }
 
 }

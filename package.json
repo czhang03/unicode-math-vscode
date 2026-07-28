@@ -57,18 +57,7 @@
 						"\\"
 					],
 					"description": "This is the strings that triggers the completion and commit, default is '\\'",
-					"markdownDeprecationMessage": "This setting will be deprecated at 1.0, please use `unicodeMathInput.TriggerStrings` instead"
-				},
-				"unicodeMathInput.TriggerStrings": {
-					"title": "Trigger Strings",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [
-						"\\"
-					],
-					"description": "This is the strings that triggers the completion and commit, default is '\\'"
+					"markdownDeprecationMessage": "`unicodeMath` prefix for setting is deprecated, please use `unicodeMathInput.TriggerStrings` instead"
 				},
 				"unicodeMath.WarnPrefixFail": {
 					"type": "string",
@@ -85,9 +74,56 @@
 					"default": [
 						"on"
 					],
-					"description": "Send a warning when there is some character cannot be converted to unicode in the prefix conversion"
+					"description": "Send a warning when there is some character cannot be converted to unicode in the prefix conversion",
+					"markdownDeprecationMessage": "`unicodeMath` prefix for setting is deprecated, please use `unicodeMathInput.WarnPrefixFail` instead"
 				},
 				"unicodeMath.WarnSymbolFail": {
+					"type": "string",
+					"enum": [
+						"on",
+						"off",
+						"concise"
+					],
+					"enumDescriptions": [
+						"send a warning when some LaTeX command cannot be converted  to unicode",
+						"do not send a warning when some LaTeX command cannot be converted to unicode",
+						"send a concise (modal) warning when some LaTeX command cannot be converted to unicode"
+					],
+					"default": [
+						"off"
+					],
+					"description": "Send a warning when a symbol cannot be converted to unicode",
+					"markdownDeprecationMessage": "`unicodeMath` prefix for setting is deprecated, please use `unicodeMathInput.WarnSymbolFail` instead"
+				},
+				"unicodeMathInput.TriggerStrings": {
+					"title": "Trigger Strings",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"\\"
+					],
+					"description": "This is the strings that triggers the completion and commit, default is '\\'"
+				},
+				"unicodeMathInput.WarnPrefixFail": {
+					"type": "string",
+					"enum": [
+						"on",
+						"off",
+						"concise"
+					],
+					"enumDescriptions": [
+						"send a warning when some character cannot be converted to the font described by the prefix",
+						"do not send a warning when some character cannot be converted to the font described by the prefix",
+						"send a concise (modal) warning when some character cannot be converted to the font described by the prefix"
+					],
+					"default": [
+						"on"
+					],
+					"description": "Send a warning when there is some character cannot be converted to unicode in the prefix conversion"
+				},
+				"unicodeMathInput.WarnSymbolFail": {
 					"type": "string",
 					"enum": [
 						"on",

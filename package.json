@@ -4,7 +4,7 @@
 	"description": "Easy way to insert unicode math symbols ∀ programming languages",
 	"version": "0.7.0",
 	"publisher": "czhang03",
-	"license": "LGPL-3.0",
+	"license": "GPL-3.0",
 	"homepage": "https://github.com/czhang03/unicode-math-vscode",
 	"icon": "icon.png",
 	"repository": {
@@ -12,9 +12,8 @@
 		"url": "https://github.com/czhang03/unicode-math-vscode"
 	},
 	"engines": {
-		"vscode": "^1.76.0"
+		"vscode": "^1.100.0"
 	},
-	"type": "module",
 	"categories": [
 		"Snippets"
 	],
@@ -276,24 +275,24 @@
 		}
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.27.0",
+		"@eslint/js": "^10.0.1",
 		"@types/mocha": "^10.0.10",
-		"@types/node": "^22.15.3",
-		"@types/vscode": "^1.76.0",
-		"@typescript-eslint/eslint-plugin": "^8.31.0",
-		"@typescript-eslint/parser": "^8.31.0",
-		"@vscode/test-electron": "^2.5.2",
-		"@vscode/vsce": "^3.3.2",
-		"esbuild": "^0.25.3",
-		"eslint": "^9.27.0",
-		"eslint-config-prettier": "^10.1.2",
-		"eslint-plugin-jsdoc": "^50.6.11",
-		"fast-check": "^4.1.1",
-		"glob": "^11.0.2",
-		"mocha": "^11.1.0",
-		"npm-check-updates": "^18.0.1",
-		"ovsx": "^0.10.2",
+		"@types/node": "^26.1.2",
+		"@types/vscode": "^1.125.0",
+		"@typescript-eslint/eslint-plugin": "^8.65.0",
+		"@typescript-eslint/parser": "^8.65.0",
+		"@vscode/test-electron": "^3.1.0",
+		"@vscode/vsce": "^3.9.2",
+		"esbuild": "^0.28.1",
+		"eslint": "^10.8.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-jsdoc": "^63.3.2",
+		"fast-check": "^4.9.0",
+		"glob": "^13.0.6",
+		"mocha": "^11.7.6",
+		"npm-check-updates": "^23.0.0",
+		"ovsx": "^1.0.2",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.32.1"
+		"typescript-eslint": "^8.65.0"
 	}
 }

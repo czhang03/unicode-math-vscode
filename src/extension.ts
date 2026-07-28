@@ -1,9 +1,9 @@
 import { window, ExtensionContext, languages, TextDocument, Position, commands, workspace, CodeActionKind, CodeActionProvider, Range, Selection, CodeActionContext, CancellationToken, CodeAction, WorkspaceEdit } from "vscode"
 import { convertibleDiagnosticsCode } from "./helpers/const"
-import { UnicodeMath} from "./unicodeMath"
+import { UnicodeMath } from "./unicodeMath"
 
-const triggerStrs = 
-        (workspace.getConfiguration().get<string[]>("unicodeMath.TriggerStrings") ?? [])
+const triggerStrs =
+    (workspace.getConfiguration().get<string[]>("unicodeMath.TriggerStrings") ?? [])
         .concat(workspace.getConfiguration().get<string[]>("unicodeMathInput.TriggerStrings") ?? [])
 
 /**
@@ -11,17 +11,17 @@ const triggerStrs =
  * @param document the current active document
  * @returns whether the extension should be disabled in current document
  */
-function enabled(document?: TextDocument) : boolean {
+function enabled(document?: TextDocument): boolean {
     const disabledLanguageIDs = new Set(workspace.getConfiguration().get<string[]>("unicodeMathInput.disableInLanguages") ?? [])
 
     const docLanguageID = document?.languageId ?? window.activeTextEditor?.document.languageId
 
     // when no document was provided, extension should not enabled
-    if (docLanguageID === undefined) {return false}
+    if (docLanguageID === undefined) { return false }
     // check if the language of current document is disabled
-    else if (disabledLanguageIDs.has(docLanguageID)) {return false}
+    else if (disabledLanguageIDs.has(docLanguageID)) { return false }
     // if it does not match all the condition above, then it should be enabled
-    else {return true}
+    else { return true }
 }
 
 
@@ -49,10 +49,10 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(completionProvider)
 
     // register tab commit
-    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', async () => 
-        { if (enabled()) { await unicodeMath.commit('tab') } 
-            else {await commands.executeCommand("tab")} 
-        }))
+    context.subscriptions.push(commands.registerCommand('unicode-math-input.commit', async () => {
+        if (enabled()) { await unicodeMath.commit('tab') }
+        else { await commands.executeCommand("tab") }
+    }))
 
     // register diagnostic
     const convertibleDiagnostics = languages.createDiagnosticCollection("unicode-math-input.convertible")
@@ -69,8 +69,8 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(
         window.onDidChangeActiveTextEditor(editor => {
             const enabledInCurEditor = enabled(editor?.document)
-            if (editor !== undefined && 
-                ! convertibleDiagnostics.has(editor.document.uri) && 
+            if (editor !== undefined &&
+                !convertibleDiagnostics.has(editor.document.uri) &&
                 enabledInCurEditor) {
 
                 convertibleDiagnostics.set(
@@ -79,7 +79,7 @@ export function activate(context: ExtensionContext) {
                 )
 
             }
-            else if (editor !== undefined && ! enabledInCurEditor) {
+            else if (editor !== undefined && !enabledInCurEditor) {
                 convertibleDiagnostics.delete(editor.document.uri)
             }
             else if (editor !== undefined) {  // when not enabled
@@ -107,15 +107,15 @@ export function activate(context: ExtensionContext) {
     )
     // remove diagnostic data when closed
     context.subscriptions.push(
-        workspace.onDidCloseTextDocument(doc => {convertibleDiagnostics.delete(doc.uri)})
+        workspace.onDidCloseTextDocument(doc => { convertibleDiagnostics.delete(doc.uri) })
     )
-    
+
     // register code action 
     context.subscriptions.push(
-		languages.registerCodeActionsProvider('*', new UnicodeConvertAction(), {
-			providedCodeActionKinds: [ CodeActionKind.QuickFix ]
-		})
-	)
+        languages.registerCodeActionsProvider('*', new UnicodeConvertAction(), {
+            providedCodeActionKinds: [CodeActionKind.QuickFix]
+        })
+    )
 
     // register config change 
     //  - changing trigger string requires reloading window to re-register the completion provider.
@@ -137,9 +137,9 @@ export function activate(context: ExtensionContext) {
             }
         }
 
-        if (changeEvent.affectsConfiguration("unicodeMathInput.disableInLanguages") ) {
+        if (changeEvent.affectsConfiguration("unicodeMathInput.disableInLanguages")) {
             const curDocument = window.activeTextEditor?.document
-            if (! (curDocument === undefined) && ! enabled(curDocument)) {
+            if (!(curDocument === undefined) && !enabled(curDocument)) {
                 convertibleDiagnostics.delete(curDocument.uri)
             }
         }
@@ -152,12 +152,12 @@ export class UnicodeConvertAction implements CodeActionProvider {
 
     private unicodeMath = new UnicodeMath(triggerStrs)
 
-	provideCodeActions(document: TextDocument, _range: Range | Selection, context: CodeActionContext, _token: CancellationToken): CodeAction[] {
+    provideCodeActions(document: TextDocument, _range: Range | Selection, context: CodeActionContext, _token: CancellationToken): CodeAction[] {
 
-		// for each diagnostic entry that has the matching `code`, create a code action command
-		return context.diagnostics
-			.filter(diagnostic => diagnostic.code === convertibleDiagnosticsCode)
-			.map(diagnostic => {
+        // for each diagnostic entry that has the matching `code`, create a code action command
+        return context.diagnostics
+            .filter(diagnostic => diagnostic.code === convertibleDiagnosticsCode)
+            .map(diagnostic => {
                 // generate the possible conversion corresponding to the diagnostic
                 const text = document.getText(diagnostic.range)
                 const possibleConversions = this.unicodeMath.getPossibleConversions(text)
@@ -167,12 +167,12 @@ export class UnicodeConvertAction implements CodeActionProvider {
 
                     const action = new CodeAction(`convert to ${unicode}`, CodeActionKind.QuickFix)
                     action.diagnostics = [diagnostic]
-                    action.isPreferred = true                    
+                    action.isPreferred = true
                     action.edit = new WorkspaceEdit()
                     action.edit.replace(document.uri, diagnostic.range, unicode)
 
                     return action
                 })
             }).flat()
-	}
+    }
 }

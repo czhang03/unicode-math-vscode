@@ -7,6 +7,7 @@
 	"license": "GPL-3.0",
 	"homepage": "https://github.com/czhang03/unicode-math-vscode",
 	"icon": "icon.png",
+	"type": "module",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/czhang03/unicode-math-vscode"

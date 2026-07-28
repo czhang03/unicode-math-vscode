@@ -1,5 +1,5 @@
 import { assert, property, string, func, integer, array, float, double} from "fast-check"
-import {maxBy, all} from "../../helpers/functions"
+import {maxBy, all} from "../../helpers/functions.js"
 
 suite("Test Cases For maxby Function", () => {
 

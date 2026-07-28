@@ -1,6 +1,6 @@
 import { window, ExtensionContext, languages, TextDocument, Position, commands, workspace, CodeActionKind, CodeActionProvider, Range, Selection, CodeActionContext, CancellationToken, CodeAction, WorkspaceEdit } from "vscode"
-import { convertibleDiagnosticsCode } from "./helpers/const"
-import { UnicodeMath } from "./unicodeMath"
+import { convertibleDiagnosticsCode } from "./helpers/const.js"
+import { UnicodeMath } from "./unicodeMath.js"
 
 const triggerStrs =
     (workspace.getConfiguration().get<string[]>("unicodeMath.TriggerStrings") ?? [])

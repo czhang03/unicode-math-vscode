@@ -2,11 +2,11 @@ import {
     TextDocument, Position, Range, CompletionItem,
     TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
-import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap, scMap } from "./charMaps"
-import { symbols } from './symbols'
-import { Font, StrWithRange } from "./helpers/types"
-import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const"
-import { maxBy, range, unique } from "./helpers/functions"
+import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap, scMap } from "./charMaps.js"
+import { symbols } from './symbols.js'
+import { Font, StrWithRange } from "./helpers/types.js"
+import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const.js"
+import { maxBy, range, unique } from "./helpers/functions.js"
 
 
 /**
@@ -300,6 +300,7 @@ export class UnicodeMath {
         })
         // always propagate the space key, or propagate tab
         // only if not used to insert a character
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!c || key === SPACE_KEY) { return doKey() }
     }
 

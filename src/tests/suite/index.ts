@@ -1,7 +1,11 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import * as path from 'path'
-import * as Mocha from 'mocha'
+import Mocha from 'mocha'
 import { glob } from 'glob'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const curDir = dirname(fileURLToPath(import.meta.url))
 
 export async function run(): Promise<void> {
 	// Create the mocha test
@@ -9,7 +13,7 @@ export async function run(): Promise<void> {
 		ui: 'tdd'
 	})
 
-	const testsRoot = path.resolve(__dirname, '..')
+	const testsRoot = path.resolve(curDir, '..')
 	const testFiles = await glob('**/**.test.js', { cwd: testsRoot })
 
 	return new Promise((resolve, reject) => {

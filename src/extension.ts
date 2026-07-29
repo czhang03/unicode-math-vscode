@@ -88,7 +88,7 @@ export function activate(context: ExtensionContext) {
     const triggers = groupTriggers(allTriggerStrs)
 
     // create class with trigger string
-    const unicodeMath = new UnicodeMath(triggers)
+    const unicodeMath = new UnicodeMath(allTriggerStrs, triggers)
 
     // register the completion provider
     const completionProvider = languages.registerCompletionItemProvider(
@@ -205,7 +205,10 @@ export function activate(context: ExtensionContext) {
 
 export class UnicodeConvertAction implements CodeActionProvider {
 
-    private unicodeMath = new UnicodeMath(groupTriggers(getAllTriggerStrings()))
+    private readonly allTriggerStrs = getAllTriggerStrings()
+    private readonly triggers = groupTriggers(this.allTriggerStrs)
+
+    private readonly unicodeMath = new UnicodeMath(this.allTriggerStrs, this.triggers)
 
     provideCodeActions(document: TextDocument, _range: Range | Selection, context: CodeActionContext, _token: CancellationToken): CodeAction[] {
 

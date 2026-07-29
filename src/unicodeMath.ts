@@ -149,6 +149,12 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
 
 export class UnicodeMath {
     /**
+     * All possible trigger string
+     * 
+     * Invariant: allTriggerStr should be equal to `this.genericTriggers + fontTriggers.keys()`
+     */
+    private readonly allTriggerStrs: string[]
+    /**
      * Generic trigger string, used to trigger completion and commit
      */
     private readonly genericTriggers: string[]
@@ -157,9 +163,10 @@ export class UnicodeMath {
      */
     private readonly fontTriggers: Map<string, Font>
 
-    constructor(tiggers: Triggers) { 
-        this.genericTriggers = tiggers.generic
-        this.fontTriggers = tiggers.fonts
+    constructor(allTriggerStrs: string[], triggers: Triggers) { 
+        this.allTriggerStrs = allTriggerStrs
+        this.genericTriggers = triggers.generic
+        this.fontTriggers = triggers.fonts
     }
 
 
@@ -194,7 +201,7 @@ export class UnicodeMath {
                 return completion
             })
 
-
+        
         return prefixCompletionItems.concat(symbolCompletionsItems)
     }
 

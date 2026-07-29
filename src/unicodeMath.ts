@@ -167,6 +167,11 @@ export class UnicodeMath {
         this.allTriggerStrs = allTriggerStrs
         this.genericTriggers = triggers.generic
         this.fontTriggers = triggers.fonts
+
+        console.debug("unicode math input object created")
+        console.debug(`all trigger strings are as follows: ${allTriggerStrs.toString()}`)
+        console.debug(`generic trigger strings are as follows: ${this.genericTriggers.toString()}`)
+        console.debug(`font trigger strings are as follows: ${Array.from(this.fontTriggers).toString()}`)
     }
 
 
@@ -178,18 +183,27 @@ export class UnicodeMath {
      * @returns a list of completion items that are available in the current context
      */
     private genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
-        console.debug(`completion triggered by ${trigger}, current word is ${word}`)
-
+        console.debug(`completion triggered by ${trigger}, current word is ${word}`)        
+        
         // compute all the possible completion items (all the unicode and fontCommands)
         const prefixCompletionItems = fontCommands.map(prefix => {
             const completion =
-                new CompletionItem(`${trigger}${prefix}{}`, CompletionItemKind.Snippet)
+                new CompletionItem(trigger.concat(prefix), CompletionItemKind.Snippet)
             completion.detail = prefixToFontType.get(prefix)?.concat(" prefix")
             completion.range = totalRange
             // retrigger completion after prefix, to complete the map string
             completion.insertText = new SnippetString(`${trigger}${prefix}{$1}`)
             return completion
         })
+
+        console.debug(`prefix completions: 
+            ${prefixCompletionItems
+                .map(completion => {
+                    if ((typeof completion.label) === "string") {
+                        return completion.label
+                    } else {return completion.label.label}
+                }).toString()
+            }`)
 
         const symbolCompletionsItems =
             Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {

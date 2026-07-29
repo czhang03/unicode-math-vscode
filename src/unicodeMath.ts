@@ -1,26 +1,14 @@
 import {
     TextDocument, Position, Range, CompletionItem,
-    TextEditorEdit, commands, window, CompletionItemKind, workspace, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
+    TextEditorEdit, commands, window, CompletionItemKind, SnippetString, Diagnostic, TextLine, TextDocumentChangeEvent, DiagnosticSeverity
 } from "vscode"
 import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, ttMap, scrMap, scMap } from "./charMaps.js"
 import { symbols } from './symbols.js'
-import { Font, StrWithRange } from "./helpers/types.js"
-import { convertibleDiagnosticsCode, doNotWarnCurLineString, getFontCommandSettingID, SPACE_KEY, wordRegex } from "./helpers/const.js"
+import { Font, StrWithRange, Triggers } from "./helpers/types.js"
+import { convertibleDiagnosticsCode, doNotWarnCurLineString, SPACE_KEY, wordRegex } from "./helpers/const.js"
 import { maxBy, range, unique } from "./helpers/functions.js"
+import { fontCommands, prefixToFontType } from "./extension.js"
 
-
-/**
- * A map that map the prefix to its corresponding maps
- */
-const prefixToFontType = new Map<string, Font>(
-    Object.values(Font)
-        .map(type => (workspace.getConfiguration().get<string[]>(getFontCommandSettingID(type)) ?? [])
-            .map(prefix => [prefix, type] as [string, Font]))
-        .flat()
-)
-
-// all the possible fontCommands
-const fontCommands: string[] = Array.from(prefixToFontType.keys())
 
 /**
  * Given a font, get the map corresponding to that type
@@ -161,8 +149,19 @@ function pickTrigger(possibleTriggers: [string, string, Range][]): [StrWithRange
 
 
 export class UnicodeMath {
+    /**
+     * Generic trigger string, used to trigger completion and commit
+     */
+    private readonly genericTriggers: string[]
+    /**
+     * Font trigger string, used to trigger a font command. 
+     */
+    private readonly fontTriggers: Map<string, Font>
 
-    constructor(private readonly triggerStrs: string[]) { }
+    constructor(tiggers: Triggers) { 
+        this.genericTriggers = tiggers.generic
+        this.fontTriggers = tiggers.fonts
+    }
 
 
     /**
@@ -236,7 +235,7 @@ export class UnicodeMath {
         const line = document.getText(lnRange)
 
         // all the trigger strings with its end index
-        const triggerStrsWithRange = this.triggerStrs
+        const triggerStrsWithRange = this.genericTriggers
             .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
             .filter(([_trigger, start]) => start !== -1)
             .map(([trigger, triggerStart]) => {
@@ -310,7 +309,7 @@ export class UnicodeMath {
      * @returns a list of possible unicode conversions
      */
     public getPossibleConversions(stringWithTrigger: string): string[] {
-        const validTriggers = this.triggerStrs.filter(trigger => stringWithTrigger.startsWith(trigger))
+        const validTriggers = this.genericTriggers.filter(trigger => stringWithTrigger.startsWith(trigger))
 
         const contents = validTriggers.map((trigger) => stringWithTrigger.slice(trigger.length))
         return contents

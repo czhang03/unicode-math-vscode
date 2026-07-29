@@ -1,10 +1,62 @@
 import { window, ExtensionContext, languages, TextDocument, Position, commands, workspace, CodeActionKind, CodeActionProvider, Range, Selection, CodeActionContext, CancellationToken, CodeAction, WorkspaceEdit } from "vscode"
-import { convertibleDiagnosticsCode } from "./helpers/const.js"
+import { convertibleDiagnosticsCode, getFontCommandSettingID } from "./helpers/const.js"
 import { UnicodeMath } from "./unicodeMath.js"
+import { Font, Triggers } from "./helpers/types.js"
 
-const triggerStrs =
-    (workspace.getConfiguration().get<string[]>("unicodeMath.TriggerStrings") ?? [])
+
+/**
+ * A map that map the font command prefix to its corresponding maps
+ */
+export const prefixToFontType = new Map<string, Font>(
+    Object.values(Font)
+        .map(type => (workspace.getConfiguration().get<string[]>(getFontCommandSettingID(type)) ?? [])
+            .map(prefix => [prefix, type] as [string, Font]))
+        .flat()
+)
+
+/** 
+ * all the possible font command prefix.
+ */
+export const fontCommands: string[] = Array.from(prefixToFontType.keys())
+
+/**
+ * Load all the trigger strings from the settings
+ * @returns a list of strings to 
+ */
+function getAllTriggerStrings(): string[] {
+    return (workspace.getConfiguration().get<string[]>("unicodeMath.TriggerStrings") ?? [])
         .concat(workspace.getConfiguration().get<string[]>("unicodeMathInput.TriggerStrings") ?? [])
+}
+
+/**
+ * from all the trigger strings, separate them into generic trigger string and font trigger string.
+ * @param triggerStrs a list of strings used as a trigger.
+ * @returns a trigger object including generic and font trigger strings.
+ */
+function groupTriggers(triggerStrs: string[]): Triggers {
+
+    console.debug(`got trigger strings ${triggerStrs.toString()}.`)
+
+    // get prefix for each font command that is also in the trigger string
+    const fontCommandTriggers: Map<string, Font> =
+        (workspace.getConfiguration().get<boolean>("unicodeMathInput.FontTriggerStrings") ?? true)
+            ? new Map(
+                Array.from(prefixToFontType.entries())
+                    .filter(([prefix, _font]) => triggerStrs.includes(prefix))
+            )
+            : new Map([])
+
+    const genericTriggers = triggerStrs.filter((str) => !fontCommands.includes(str))
+
+    console.debug(`Trigger strings grouped.`)
+    console.debug(`generic trigger strings are ${genericTriggers.toString()}`)
+    console.debug(`font command triggers are ${Array.from(fontCommandTriggers).toString()}`)
+
+    return {
+        generic: genericTriggers,
+        fonts: fontCommandTriggers
+    }
+}
 
 /**
  * Dynamically check whether the extension should be enabled in current document
@@ -32,8 +84,11 @@ function enabled(document?: TextDocument): boolean {
  */
 export function activate(context: ExtensionContext) {
 
+    const allTriggerStrs = getAllTriggerStrings()
+    const triggers = groupTriggers(allTriggerStrs)
+
     // create class with trigger string
-    const unicodeMath = new UnicodeMath(triggerStrs)
+    const unicodeMath = new UnicodeMath(triggers)
 
     // register the completion provider
     const completionProvider = languages.registerCompletionItemProvider(
@@ -44,7 +99,7 @@ export function activate(context: ExtensionContext) {
                 return enabled(document) ? unicodeMath.provideCompletion(document, position) : []
             }
         },
-        ...triggerStrs  // trigger completion on slash
+        ...allTriggerStrs  // trigger completion on slash
     )
     context.subscriptions.push(completionProvider)
 
@@ -150,7 +205,7 @@ export function activate(context: ExtensionContext) {
 
 export class UnicodeConvertAction implements CodeActionProvider {
 
-    private unicodeMath = new UnicodeMath(triggerStrs)
+    private unicodeMath = new UnicodeMath(groupTriggers(getAllTriggerStrings()))
 
     provideCodeActions(document: TextDocument, _range: Range | Selection, context: CodeActionContext, _token: CancellationToken): CodeAction[] {
 

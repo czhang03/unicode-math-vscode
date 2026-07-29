@@ -102,9 +102,17 @@
 						"type": "string"
 					},
 					"default": [
-						"\\"
+						"\\",
+						"^",
+						"_"
 					],
-					"description": "This is the strings that triggers the completion and commit, default is '\\'"
+					"description": "Strings that triggers the completion and commit."
+				},
+				"unicodeMathInput.FontTriggerStrings": {
+					"title": "Allow Font Command To Trigger Completion",
+					"type": "boolean",
+					"default": true,
+					"description": "If a string, like `\"_\"`, is both a font command and a trigger string, then it will proritize completion for the specific font command. If this is off, you will need to type `\\` or `_` to trigger completion and then `_` to invoke the subscript font command; if this is on, then `_` will both trigger completion and font command."
 				},
 				"unicodeMathInput.WarnPrefixFail": {
 					"type": "string",

@@ -21,3 +21,12 @@ export enum Font {
  * A string with its range on the document.
  */
 export interface StrWithRange { str: string; range: Range }
+
+
+/**
+ * A collction of triggers including generic triggers for completion, and font triggers for specific font command.
+ */
+export interface Triggers {
+    generic: string[],
+    fonts: Map<string, Font>
+}

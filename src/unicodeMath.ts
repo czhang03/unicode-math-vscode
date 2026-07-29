@@ -118,10 +118,9 @@ function getChangedLineNums(event: TextDocumentChangeEvent): Set<number> {
 
 
 /**
- * A helper function that pick the trigger and package the information nicely into StrWithRange
- * given all the possible splits of trigger and string,
- * pick the "last trigger" (defined by the end of the trigger string)
- * and package the result nicely into StrWithRange.
+ * A helper function that pick where given a trigger, a string prefixed with trigger, and the total range of the trigger,
+ * pick the "last trigger" (defined by the end of the trigger string),
+ * then split the trigger and the rest of the string into two `StrWithRange`, each with its content and ranges.
  * @param possibleTriggers each trigger with its rest of the string, and the range of the entire string with trigger
  * @returns range and str of the trigger and the rest of the string
  */

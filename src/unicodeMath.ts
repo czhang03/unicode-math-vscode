@@ -9,7 +9,6 @@ import { convertibleDiagnosticsCode, doNotWarnCurLineString, SPACE_KEY, wordRege
 import { maxBy, range, unique } from "./helpers/functions.js"
 import { fontCommands, prefixToFontType } from "./extension.js"
 
-
 /**
  * Given a font, get the map corresponding to that type
  * @param font the type of the map
@@ -176,23 +175,27 @@ export class UnicodeMath {
 
 
     /**
-     * Generate completion based on the string at cursor
+     * Generate generic completion from a generic trigger string
      * @param trigger the trigger string that triggered current completion, for example "\"
-     * @param word the word following the trigger string, but not including
      * @param totalRange the range from the start of the trigger string to then end of the word
      * @returns a list of completion items that are available in the current context
      */
-    private genCompletions(trigger: string, word: string, totalRange: Range): CompletionItem[] {
-        console.debug(`completion triggered by ${trigger}, current word is ${word}`)        
-        
-        // compute all the possible completion items (all the unicode and fontCommands)
+    private genGenericCompletions(trigger: string, totalRange: Range): CompletionItem[] {
+        console.debug(`generic completion triggered by ${trigger}`)  
+
+        // completion for all the font command
         const prefixCompletionItems = fontCommands.map(prefix => {
+            // readable font displayed to the user
+            const font =  `...${prefixToFontType.get(prefix) ?? ""}`
+            const completionLabel = trigger.concat(prefix).concat(`{${font}}`)
             const completion =
-                new CompletionItem(trigger.concat(prefix), CompletionItemKind.Snippet)
-            completion.detail = prefixToFontType.get(prefix)?.concat(" prefix")
+                new CompletionItem(completionLabel, CompletionItemKind.Snippet)
+            // ensure that prefix completion are ranked first
+            completion.sortText = `00-${completionLabel}`
+            completion.detail = font.concat(" prefix")
             completion.range = totalRange
-            // retrigger completion after prefix, to complete the map string
-            completion.insertText = new SnippetString(`${trigger}${prefix}{$1}`)
+            // insert text will contain either the font as template or `...`
+            completion.insertText = new SnippetString(`${trigger}${prefix}{\${1:${font}}}`)
             return completion
         })
 
@@ -205,6 +208,7 @@ export class UnicodeMath {
                 }).toString()
             }`)
 
+        // generate completion item for unicode symbols
         const symbolCompletionsItems =
             Array.from(symbols.entries()).map(([inpStr, unicodeChar]) => {
                 const completion: CompletionItem =
@@ -214,7 +218,6 @@ export class UnicodeMath {
                 completion.range = totalRange
                 return completion
             })
-
         
         return prefixCompletionItems.concat(symbolCompletionsItems)
     }
@@ -234,8 +237,8 @@ export class UnicodeMath {
             const [triggerWithRange, wordWithRange] = posContext
             const triggerRange = triggerWithRange.range
             const wordRange = wordWithRange.range
-            return this.genCompletions(
-                triggerWithRange.str, wordWithRange.str, triggerRange.union(wordRange)
+            return this.genGenericCompletions(
+                triggerWithRange.str, triggerRange.union(wordRange)
             )
         }
     }
@@ -255,7 +258,7 @@ export class UnicodeMath {
         const line = document.getText(lnRange)
 
         // all the trigger strings with its end index
-        const triggerStrsWithRange = this.genericTriggers
+        const triggerStrsWithRange = this.allTriggerStrs
             .map((trigger) => [trigger, line.lastIndexOf(trigger)] as [string, number])
             .filter(([_trigger, start]) => start !== -1)
             .map(([trigger, triggerStart]) => {

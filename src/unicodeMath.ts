@@ -162,7 +162,7 @@ export class UnicodeMath {
      */
     private readonly fontTriggers: Map<string, Font>
 
-    constructor(allTriggerStrs: string[], triggers: Triggers) { 
+    constructor(allTriggerStrs: string[], triggers: Triggers) {
         this.allTriggerStrs = allTriggerStrs
         this.genericTriggers = triggers.generic
         this.fontTriggers = triggers.fonts
@@ -219,8 +219,45 @@ export class UnicodeMath {
                 completion.range = totalRange
                 return completion
             })
-        
+
         return prefixCompletionItems.concat(symbolCompletionsItems)
+    }
+
+    /**
+     * Generate the completion item for font trigger strings
+     * @param fontTrigger the string that triggered this font completion
+     * @param font the font indicated by the trigger string
+     * @param totalRange the range of all the word until the cursor.
+     * @returns a list of completion items that includes font command prefix and single character after the font command
+     */
+    private genFontTriggerCompletions(fontTrigger: string, font: Font, totalRange: Range): CompletionItem[] {
+
+        // generate completion for prefix command
+        const completionLabel = fontTrigger.concat(`{${font}}`)
+        const prefixCompletion = new CompletionItem(completionLabel, CompletionItemKind.Snippet)
+        // ensure prefix completion is at the top
+        prefixCompletion.sortText = `00-${completionLabel}`
+        prefixCompletion.filterText = fontTrigger
+        prefixCompletion.detail = `${font} prefix`
+        prefixCompletion.range = totalRange
+        // insert text will contain either the font as template or `...`
+        prefixCompletion.insertText = new SnippetString(`${fontTrigger}{\${1:${font}}}`)
+
+        // generate completion for single character
+        const fontCharCompletions = Array.from(fontToMap(font).entries()).map(
+            ([char, unicodeChar]) => {
+                const completionLabel = fontTrigger.concat(char)
+                const prefixCompletion = new CompletionItem(completionLabel, CompletionItemKind.Constructor)
+                prefixCompletion.detail = `${char} in ${font} font: ${unicodeChar}`
+                prefixCompletion.range = totalRange
+                // insert text will contain either the font as template or `...`
+                prefixCompletion.insertText = unicodeChar
+
+                return prefixCompletion
+            }
+        )
+
+        return fontCharCompletions.concat([prefixCompletion])
     }
 
     /**
@@ -238,9 +275,22 @@ export class UnicodeMath {
             const [triggerWithRange, wordWithRange] = posContext
             const triggerRange = triggerWithRange.range
             const wordRange = wordWithRange.range
-            return this.genGenericCompletions(
-                triggerWithRange.str, triggerRange.union(wordRange)
-            )
+            // use generic trigger strings
+            if (this.genericTriggers.includes(triggerWithRange.str)) {
+                return this.genGenericCompletions(
+                    triggerWithRange.str, triggerRange.union(wordRange)
+                )
+            }
+            // provide font trigger strings
+            const font = this.fontTriggers.get(triggerWithRange.str)
+            if (font !== undefined) {
+                return this.genFontTriggerCompletions(
+                    triggerWithRange.str, font, triggerRange.union(wordRange)
+                )
+            }
+
+            console.error("provide completion failed")
+            return []
         }
     }
 

@@ -186,13 +186,14 @@ export class UnicodeMath {
         // completion for all the font command
         const prefixCompletionItems = fontCommands.map(prefix => {
             // readable font displayed to the user
-            const font =  `...${prefixToFontType.get(prefix) ?? ""}`
+            const font = `...${prefixToFontType.get(prefix) ?? ""}`
             const completionLabel = trigger.concat(prefix).concat(`{${font}}`)
             const completion =
                 new CompletionItem(completionLabel, CompletionItemKind.Snippet)
             // ensure that prefix completion are ranked first
             completion.sortText = `00-${completionLabel}`
             completion.detail = font.concat(" prefix")
+            completion.filterText = trigger
             completion.range = totalRange
             // insert text will contain either the font as template or `...`
             completion.insertText = new SnippetString(`${trigger}${prefix}{\${1:${font}}}`)
@@ -204,7 +205,7 @@ export class UnicodeMath {
                 .map(completion => {
                     if ((typeof completion.label) === "string") {
                         return completion.label
-                    } else {return completion.label.label}
+                    } else { return completion.label.label }
                 }).toString()
             }`)
 

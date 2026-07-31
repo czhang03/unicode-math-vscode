@@ -148,6 +148,14 @@
 					],
 					"description": "Send a warning when a symbol cannot be converted to unicode"
 				},
+				"unicodeMathInput.Diagnostic.Enabled": {
+					"title": "Enable Diagnostic",
+					"type": "boolean",
+					"default": [
+						true
+					],
+					"description": "Enable diagnostic identifying all the convertible command, and offer to convert them"
+				},
 				"unicodeMathInput.SubscriptFontCommands": {
 					"title": "Subscript Font Commands",
 					"type": "array",

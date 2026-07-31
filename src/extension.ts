@@ -76,6 +76,15 @@ function enabled(document?: TextDocument): boolean {
     else { return true }
 }
 
+/**
+ * Dynamically check whether diagnostic is currently enabled
+ * 
+ * Default to `true`, i.e. enabled, if the check failed
+ * @returns whether diagnostic is currently enabled
+ */
+function diagnosticEnabled() : boolean {
+    return workspace.getConfiguration().get<boolean>("unicodeMathInput.Diagnostic.Enabled") ?? true
+}
 
 
 /**
@@ -113,7 +122,7 @@ export function activate(context: ExtensionContext) {
     const convertibleDiagnostics = languages.createDiagnosticCollection("unicode-math-input.convertible")
     context.subscriptions.push(convertibleDiagnostics)
     // generate all the diagnostics
-    if (window.activeTextEditor !== undefined && enabled(window.activeTextEditor.document)) {
+    if (window.activeTextEditor !== undefined && enabled(window.activeTextEditor.document) && diagnosticEnabled()) {
         convertibleDiagnostics.set(
             window.activeTextEditor.document.uri,
             unicodeMath.genAllDiagnostic(window.activeTextEditor.document)
@@ -126,7 +135,7 @@ export function activate(context: ExtensionContext) {
             const enabledInCurEditor = enabled(editor?.document)
             if (editor !== undefined &&
                 !convertibleDiagnostics.has(editor.document.uri) &&
-                enabledInCurEditor) {
+                enabledInCurEditor && diagnosticEnabled()) {
 
                 convertibleDiagnostics.set(
                     editor.document.uri,
@@ -134,7 +143,7 @@ export function activate(context: ExtensionContext) {
                 )
 
             }
-            else if (editor !== undefined && !enabledInCurEditor) {
+            else if (editor !== undefined && !enabledInCurEditor && !diagnosticEnabled()) {
                 convertibleDiagnostics.delete(editor.document.uri)
             }
             else if (editor !== undefined) {  // when not enabled
@@ -150,7 +159,7 @@ export function activate(context: ExtensionContext) {
             const curDocument = e.document
             const curURI = curDocument.uri
             const curEnabled = enabled(curDocument)
-            if (curEnabled) {
+            if (curEnabled && diagnosticEnabled()) {
                 convertibleDiagnostics.set(
                     curURI,
                     unicodeMath.genAllDiagnostic(curDocument)
@@ -195,6 +204,17 @@ export function activate(context: ExtensionContext) {
         if (changeEvent.affectsConfiguration("unicodeMathInput.disableInLanguages")) {
             const curDocument = window.activeTextEditor?.document
             if (!(curDocument === undefined) && !enabled(curDocument)) {
+                convertibleDiagnostics.delete(curDocument.uri)
+            }
+        }
+
+        if (changeEvent.affectsConfiguration("unicodeMathInput.Diagnostic.Enabled")) {
+            const curDocument = window.activeTextEditor?.document
+            
+            if (!(curDocument === undefined) && diagnosticEnabled()) {
+                convertibleDiagnostics.set(curDocument.uri, unicodeMath.genAllDiagnostic(curDocument))
+            }
+            if (!(curDocument === undefined) && !diagnosticEnabled()) {
                 convertibleDiagnostics.delete(curDocument.uri)
             }
         }

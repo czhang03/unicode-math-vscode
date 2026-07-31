@@ -97,6 +97,7 @@ function convertString(str: string): string | null {
     // if prefix can be found, using prefix
     else {
         const [font, content] = tryFontStr
+        console.debug(`converting string ${content} with font ${font}`)
         return toFont(content, font)
     }
 }
@@ -357,7 +358,7 @@ export class UnicodeMath {
 
                     if (posContext !== null) {
                         const [triggerWithRange, wordWithRange] = posContext
-                        console.debug(`trying to commit ${wordWithRange.str}`)
+                        console.debug(`trying to commit ${wordWithRange.str} with trigger ${triggerWithRange.str}`)
                         // the total range of word including trigger
                         const totalRange = triggerWithRange.range.union(wordWithRange.range)
                         const changed = convertString(wordWithRange.str)

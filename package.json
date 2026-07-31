@@ -5,12 +5,12 @@
 	"version": "0.7.0",
 	"publisher": "czhang03",
 	"license": "GPL-3.0",
-	"homepage": "https://github.com/czhang03/unicode-math-vscode",
+	"homepage": "https://codeberg.org/czhang03/unicode-math-vscode",
 	"icon": "icon.png",
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/czhang03/unicode-math-vscode"
+		"url": "https://codeberg.org/czhang03/unicode-math-vscode"
 	},
 	"engines": {
 		"vscode": "^1.100.0"

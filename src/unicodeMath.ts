@@ -80,27 +80,6 @@ function toFont(str: string, type: Font): string | null {
     }
 }
 
-/**
- * Given a user inputted string, convert it into unicode, 
- * return null if it cannot be converted
- * @param str a input string, typed in the editor by the user
- * @returns the unicode version of the input string
- */
-function convertString(str: string): string | null {
-
-    const tryFontStr = getFont(str)
-
-    // if a prefix cannot be found, then fallback to search in symbols
-    if (tryFontStr === null) {
-        return symbols.get(str) ?? null
-    }
-    // if prefix can be found, using prefix
-    else {
-        const [font, content] = tryFontStr
-        console.debug(`converting string ${content} with font ${font}`)
-        return toFont(content, font)
-    }
-}
 
 /**
  * Get all the lines that was changed from the text change event
@@ -174,6 +153,38 @@ export class UnicodeMath {
         console.debug(`font trigger strings are as follows: ${Array.from(this.fontTriggers).toString()}`)
     }
 
+    /**
+     * Given a user inputted string, convert it into unicode, 
+     * return null if it cannot be converted
+     * @param trigger the trigger string, used to see if it is a font trigger
+     * @param str a input string, typed in the editor by the user
+     * @returns the unicode version of the input string
+     */
+    private convertString(trigger: string, str: string): string | null {
+
+        // if the trigger is a font trigger then add the trigger back        
+        // TODO: This logic is not ideal, as we already know the font when the trigger is a font trigger
+        // but we off load getting the font from prefix to the `getFont` function again.
+        const font = this.fontTriggers.get(trigger)
+        const contentWithFontPrefix =
+            font !== undefined ? trigger + str : str
+
+        // if the trigger string is a generic trigger
+        const tryFontStr = getFont(contentWithFontPrefix)
+
+        // if a prefix cannot be found, then fallback to search in symbols
+        if (tryFontStr === null) {
+            return symbols.get(contentWithFontPrefix) ?? null
+        }
+        // if prefix can be found, using prefix
+        else {
+            const [font, content] = tryFontStr
+            console.debug(`converting string ${content} with font ${font}`)
+            return toFont(content, font)
+        }
+    }
+
+
 
     /**
      * Generate generic completion from a generic trigger string
@@ -182,7 +193,7 @@ export class UnicodeMath {
      * @returns a list of completion items that are available in the current context
      */
     private genGenericCompletions(trigger: string, totalRange: Range): CompletionItem[] {
-        console.debug(`generic completion triggered by ${trigger}`)  
+        console.debug(`generic completion triggered by ${trigger}`)
 
         // completion for all the font command
         const prefixCompletionItems = fontCommands.map(prefix => {
@@ -361,7 +372,7 @@ export class UnicodeMath {
                         console.debug(`trying to commit ${wordWithRange.str} with trigger ${triggerWithRange.str}`)
                         // the total range of word including trigger
                         const totalRange = triggerWithRange.range.union(wordWithRange.range)
-                        const changed = convertString(wordWithRange.str)
+                        const changed = this.convertString(triggerWithRange.str, wordWithRange.str)
                         console.debug(changed !== null && changed !== "" ? `committing to ${changed}` : `nothing matched`)
                         if (changed !== null && changed !== "") {
                             editor.delete(totalRange)
@@ -386,10 +397,12 @@ export class UnicodeMath {
     public getPossibleConversions(stringWithTrigger: string): string[] {
         const validTriggers = this.genericTriggers.filter(trigger => stringWithTrigger.startsWith(trigger))
 
-        const contents = validTriggers.map((trigger) => stringWithTrigger.slice(trigger.length))
-        return contents
-            .map((content) => convertString(content))
-            .filter((res): res is string => res !== null)
+        return validTriggers
+            .map((trigger) => {
+                const content = stringWithTrigger.slice(trigger.length)
+                return this.convertString(trigger, content)
+            })
+            .filter(res => res !== null)
     }
 
     /**

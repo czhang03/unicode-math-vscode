@@ -61,3 +61,14 @@ export function all(conditions: boolean[]): boolean {
     }
     return true
 }
+
+/**
+ * escape a string for regex
+ * 
+ * TODO: use `Regex.escape` when using newer version of js
+ * @param str input string
+ * @returns the escaped regex string
+ */
+export function regexEscape(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}

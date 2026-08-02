@@ -6,7 +6,7 @@ import { supsMap, subsMap, boldMap, italicMap, calMap, frakMap, bbMap, sfMap, tt
 import { symbols } from './symbols.js'
 import { Font, StrWithRange, Triggers } from "./helpers/types.js"
 import { convertibleDiagnosticsCode, doNotWarnCurLineString, SPACE_KEY, wordRegex } from "./helpers/const.js"
-import { maxBy, range, unique } from "./helpers/functions.js"
+import { maxBy, range, regexEscape, unique } from "./helpers/functions.js"
 import { fontCommands, prefixToFontType } from "./extension.js"
 
 /**
@@ -45,7 +45,7 @@ function getFont(word: string): [Font, string] | null {
 
     const matchedFonts = Array.from(prefixToFontType)
         // matches all the prefix
-        .map(([prefix, font]) => [font, word.match(`^${prefix}{(.*)}$`)] as [Font, RegExpMatchArray | null])
+        .map(([prefix, font]) => [font, word.match(`^${regexEscape(prefix)}{(.*)}$`)] as [Font, RegExpMatchArray | null])
         // filters out the match failure
         .filter((res): res is [Font, RegExpMatchArray] => (res[1] !== null))
         // return the matched string (first match group after the entire string) and the font to convert
@@ -399,7 +399,7 @@ export class UnicodeMath {
      * @returns a list of possible unicode conversions
      */
     public getPossibleConversions(stringWithTrigger: string): string[] {
-        const validTriggers = this.genericTriggers.filter(trigger => stringWithTrigger.startsWith(trigger))
+        const validTriggers = this.allTriggerStrs.filter(trigger => stringWithTrigger.startsWith(trigger))
 
         return validTriggers
             .map((trigger) => {

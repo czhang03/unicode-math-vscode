@@ -418,7 +418,7 @@ export class UnicodeMath {
     private genLinesDiagnostics(lines: TextLine[]): Diagnostic[] {
         return lines
             .filter(line => !line.text.includes(doNotWarnCurLineString))
-            .map(line => [...line.text.matchAll(wordRegex)]
+            .map(line => Array.from(line.text.matchAll(wordRegex))
                 .map(match => {
 
                     const word = match[0]

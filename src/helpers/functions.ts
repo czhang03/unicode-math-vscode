@@ -22,7 +22,7 @@ export function maxBy<T>(by: (elem: T) => number, arr: T[]): T | null {
  * @returns a list that contains all the numbers in between (do not include the end)
  */
 export function range(start: number, end: number): number[] {
-    const length = end - start 
+    const length = end - start
     return [...Array(length).keys()].map(elem => elem + start)
 }
 
@@ -44,7 +44,7 @@ export function unique<T>(arr: T[]): T[] {
  */
 export function any(conditions: boolean[]): boolean {
     for (const condition of conditions) {
-        if (condition) {return true}
+        if (condition) { return true }
     }
     return false
 }
@@ -57,10 +57,22 @@ export function any(conditions: boolean[]): boolean {
  */
 export function all(conditions: boolean[]): boolean {
     for (const condition of conditions) {
-        if (!condition) {return false}
+        if (!condition) { return false }
     }
     return true
 }
+
+/**
+ * Take the cartesian product of multiple arrays
+ * @param arrs a collection of arrays
+ * @returns The cartition product of these arrays
+ */
+export function product<T>(...arrs: T[][]): T[][] {
+    return arrs.reduce<T[][]>((acc, lastArr) =>
+        acc.flatMap(productEle => lastArr.map(ele => [...productEle, ele]))
+        , [[]])
+}
+
 
 /**
  * escape a string for regex

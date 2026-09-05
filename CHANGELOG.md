@@ -1,3 +1,11 @@
+# V0.8.0
+
+- Force the font prefix completion to be on top of the completion list
+- License in `package.json` now reflect the current license of the software
+- Add completion for font trigger
+- Update packages to fix security vulnerability
+- Use ES module instead of common JS across the project
+
 # V0.6.2
 
 - Added some useful alias to like `\nat ↦ ℕ`, `\rational ↦ ℚ`, `\real ↦ ℝ`
